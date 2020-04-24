@@ -6,23 +6,23 @@ import (
 	"time"
 )
 
-func demo(num int) {
+func demo() {
+	cxt, _ := CtxAdd()
 	for {
 		select {
 		case <-time.After(1 * time.Second):
-		case <-GetCtx(num).Done():
-			fmt.Println("demo stop ", num)
+		case <-cxt.Done():
+			fmt.Println(" demo stop ")
 			return
 		}
 	}
 }
 func TestGetCtx(t *testing.T) {
-	cancel := InitContext(3)
-	go demo(0)
-	go demo(1)
-	go demo(2)
-	time.Sleep(10 * time.Second)
-	cancel()
+	go demo()
+	go demo()
+	go demo()
 	time.Sleep(3 * time.Second)
+	CancelAll()
+	time.Sleep(10 * time.Second)
 	fmt.Println("stop")
 }
