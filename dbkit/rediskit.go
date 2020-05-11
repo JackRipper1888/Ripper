@@ -205,7 +205,6 @@ func (rc *RedisClient) HMGetAll(key string) (map[string]string, error) {
 	} else if err != nil {
 		return nil, err
 	}
-
 	return MapData, nil
 }
 

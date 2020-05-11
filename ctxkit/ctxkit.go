@@ -1,8 +1,9 @@
-package cxtkit
+package ctxkit
 
 import (
 	"context"
 	"fmt"
+	"runtime"
 )
 
 var (
@@ -46,6 +47,7 @@ func CtxAdd() (context.Context, func()) {
 }
 
 func CancelAll() {
+	defer runtime.GC()
 	for _, k := range contextList {
 		k.cancel()
 	}
