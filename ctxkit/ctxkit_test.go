@@ -1,4 +1,4 @@
-package cxtkit
+package ctxkit
 
 import (
 	"fmt"
