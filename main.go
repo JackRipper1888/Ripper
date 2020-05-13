@@ -1,15 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/bitly/go-simplejson"
-	"io/ioutil"
-	"net"
-	"net/http"
-	"os"
-	"tracker/utils"
 )
 
 //go语言的interface类型 本质是一个指针类型
@@ -97,81 +89,4 @@ func main() {
 	//t2 := time.Date(2018, 1, 2, 15, 0, 0, 0, time.Local)
 	//
 	//logs.Error(t1.Unix()%(24*3600)%300,t2.Unix()%300)
-
-}
-
-func peerclient() {
-	logs.Info("peerclient() start")
-	conn, err := net.Dial("udp", "183.60.143.82:8001")
-	if err != nil {
-		os.Exit(1)
-		return
-	}
-	defer conn.Close()
-	msgNum := 0
-	for msgNum < 10000 {
-		msgNum++
-		//select {
-		//case <- time.After(1*time.Second):
-		data := map[string]interface{}{
-			"cmd":  "login",
-			"data": "12371892",
-		}
-		body, _ := json.Marshal(data)
-		conn.Write([]byte(body))
-
-		var msg [1024]byte
-		_, err = conn.Read(msg[0:])
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Println("msgcount:", msgNum)
-	}
-}
-
-func Get(url, confId, controllerIps string, param map[string]string) error {
-	// 动态更新token
-	logPre := "|#controller|Get|id=%s,controllerIps=%s|msg:%s"
-	if len(param) > 0 {
-		url += "?"
-		paramStr := ""
-		for k, v := range param {
-			paramStr += "&" + k + "=" + v
-		}
-		url += paramStr[1:]
-	}
-	resp, err := http.Get(url)
-	if err != nil {
-		logs.Error("@"+logPre, confId, controllerIps, err.Error())
-		return utils.New(-1, err.Error())
-	}
-	if resp == nil {
-		return utils.New(-1, "请求体为空")
-	}
-	//返回的状态码
-	statusCode := resp.StatusCode
-	defer resp.Body.Close()
-	if statusCode != 200 {
-		logs.Error("@"+logPre, confId, controllerIps, statusCode)
-		return utils.New(-1, "请求体为空")
-	}
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logs.Error("@"+logPre, confId, controllerIps, statusCode)
-		return utils.New(-1, "请求错误"+err.Error())
-	}
-	bodyJson, err := simplejson.NewJson(respBody)
-	if err != nil {
-		logs.Error("@"+logPre, confId, controllerIps, err.Error())
-		return utils.New(-1, "下行json解析错误"+err.Error())
-	}
-	code := bodyJson.Get("code").MustInt(0)
-	msg := bodyJson.Get("msg").MustString("")
-	if code != 1 {
-		logs.Error("@"+logPre, confId, controllerIps, msg)
-		return utils.New(-1, msg)
-	}
-	logs.Info(logPre, confId, controllerIps, "suc")
-	return nil
 }
