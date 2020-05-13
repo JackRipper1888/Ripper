@@ -1,10 +1,12 @@
 package udpkit
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/Ripper/ctxkit"
 	"github.com/astaxie/beego/logs"
 	"net"
+	"os"
 	"time"
 )
 
@@ -97,4 +99,24 @@ func RepPeerCmdTask() {
 			return
 		}
 	}
+}
+
+func UdpClent(addr string, data map[string]interface{}) ([]byte, error) {
+	conn, err := net.Dial("udp", addr)
+	if err != nil {
+		os.Exit(1)
+		return nil, err
+	}
+	defer conn.Close()
+
+	body, _ := json.Marshal(data)
+	conn.Write([]byte(body))
+
+	var msg [1024]byte
+	l, err := conn.Read(msg[0:])
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return msg[:l], nil
 }

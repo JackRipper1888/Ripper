@@ -12,39 +12,8 @@ import (
 
 var wg = sync.WaitGroup{}
 
-func peerclient() {
-	logs.Info("peerclient() start")
-	conn, err := net.Dial("udp", "183.60.143.82:8001")
-	if err != nil {
-		os.Exit(1)
-		return
-	}
-	defer conn.Close()
-	msgNum := 0
-	for msgNum < 10000 {
-		msgNum++
-		//select {
-		//case <- time.After(1*time.Second):
-		data := map[string]interface{}{
-			"cmd":  "login",
-			"data": "12371892",
-		}
-		body, _ := json.Marshal(data)
-		conn.Write([]byte(body))
-
-		fmt.Println(fmt.Sprintf("Write id:%d...", msgNum))
-		//var msg [1024]byte
-		//_,err :=conn.Read(msg[0:])
-		//if err != nil {
-		//	fmt.Println(err)
-		//	return
-		//}
-		//fmt.Println("msgcount:",msgNum,string(msg[:]))
-	}
-}
-
 //"183.60.143.82:3030"
-func demo() {
+func peerclient() {
 	logs.Info("peerclient() start")
 	conn, err := net.Dial("udp", "183.60.143.83:8081")
 	if err != nil {
@@ -76,7 +45,7 @@ func demo() {
 	}
 }
 
-func TestUdpTask(t *testing.T) {
+func TestListenUdpTask(t *testing.T) {
 	//demo()
 	//开启udp客户端
 	peerclient()
@@ -90,4 +59,31 @@ func TestUdpTask(t *testing.T) {
 	//ctxkit.CancelAll()
 	//	wg.Add(1)
 	//	wg.Wait()
+}
+
+func TestUdpClent(t *testing.T) {
+	//userInfo := map[string]interface{}{
+	//	"cmd":"user_info",
+	//	"data": map[string]interface{}{
+	//		"uid" : "123h12kjhjkf",
+	//		"all_stream" : []map[string]interface{}{
+	//			{
+	//				"stream_id" : "wusha",
+	//				"resource_id" : "12g3h1ihd",
+	//				"resource_name" : "误杀",
+	//			}},
+	//		"loc" : [2]float64{10.0, 87.5500030517578}}}
+	geoNear := map[string]interface{}{
+		"cmd": "geo_near",
+		"data": map[string]interface{}{
+			"point_X": 10.00,
+			"point_Y": 10.00,
+		}}
+	data, err := UdpClent("192.168.100.200:8091", geoNear)
+	if err != nil {
+		logs.Error(err)
+	}
+	resultInfo := make(map[string]interface{}, 0)
+	json.Unmarshal(data, &resultInfo)
+	fmt.Println("reading", resultInfo)
 }
