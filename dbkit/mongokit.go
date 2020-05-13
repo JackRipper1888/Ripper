@@ -1,8 +1,9 @@
-package utils
+package dbkit
 
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"github.com/Ripper/ctxkit"
 	"github.com/astaxie/beego/logs"
@@ -30,6 +31,13 @@ type mongoConn struct {
 	globalSession *mgo.Session
 	mongoDBName   string
 }
+
+/**
+注意 先要将索引要设置成 2dsphere
+collection:集合
+index:为索引名
+db.collection.ensureIndex({index: "2dsphere"})
+*/
 
 func InitMongoDB(mongoConnName, connUrl, dbName string, maxConn int) {
 	if connUrl == "" || dbName == "" {
@@ -135,13 +143,37 @@ func GetMongoConn(mongoConnName string) *mongoConn {
 
 //插入记录
 /*
-colelection:表
-data:存储文档
+colelection:集合
+document:文档
 */
-func (this *mongoConn) Insert(colelection string, data interface{}) error {
-	defer this.globalSession.Close()
-	err := this.globalSession.DB(this.mongoDBName).C(colelection).Insert(data)
-	this.globalSession.DB(this.mongoDBName).C(colelection).DropIndex()
+func (this *mongoConn) Insert(colelection string, document interface{}) error {
+	conn := this.globalSession.Clone()
+	defer conn.Close()
+	err := conn.DB(this.mongoDBName).C(colelection).Insert(document)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//修改记录
+/*
+colelection:集合
+params:筛选条件
+document:文档
+$:有记录修改,没记录添加
+*/
+func (this *mongoConn) Update(colelection string, document interface{}, params map[string]interface{}) error {
+	conn := this.globalSession.Clone()
+	defer conn.Close()
+	c := conn.DB(this.mongoDBName).C(colelection)
+	change := mgo.Change{
+		Update:    bson.M{"$set": document},
+		ReturnNew: false,
+		Remove:    false,
+		Upsert:    true,
+	}
+	_, err := c.Find(params).Apply(change, nil)
 	if err != nil {
 		return err
 	}
@@ -150,28 +182,52 @@ func (this *mongoConn) Insert(colelection string, data interface{}) error {
 
 //查询地理坐标范围内的数据
 /*
-colelection:表
+colelection:集合
 pointX:查询地理的横坐标
 pointY:查询地理的纵坐标
 maxDistance:查询地理范围
 */
-func (this *mongoConn) FindGeoNear(colelection string, pointX, pointY, maxDistance float64) (interface{}, error) {
-	defer this.globalSession.Close()
+func (this *mongoConn) FindGeoNear(colelection string, pointX, pointY, maxDistance float64, queryParams map[string]interface{}) ([]map[string]interface{}, error) {
+	conn := this.globalSession.Clone()
+	defer conn.Close()
 	resp := bson.M{}
-	db := this.globalSession.DB(this.mongoDBName)
-	err := db.Run(bson.D{
+	db := conn.DB(this.mongoDBName)
+	var reqList = []bson.DocElem{
 		{"geoNear", colelection},
+		//是否用球面来计算距离，如果是2dsphere必须为true
 		{"spherical", true},
+		//指定附近点的坐标 对于2dsphere用GeoJson，对于2s用坐标对
 		{"near", [2]float64{pointX, pointY}},
-		//{"num", 3},
-		//{"query": { "category": "public" }},
+		//限制的最大距离，如果是GeomJson单位为米，如果是坐标对单位为弧度
 		{"maxDistance", maxDistance},
-	}, &resp)
+		//对返回的基于距离的结果，乘以这个算子
+		{"distanceMultiplier", 6371},
+		//限制的最小距离，如果是GeomJson单位为米，如果是坐标对单位为弧度
+		//{"minDistance", 3},
+		//返回的最大数，默认是100
+		//{"limit", 3},
+		//{"num", 3},
+	}
+	for k, v := range queryParams {
+		reqList = append(reqList, bson.DocElem{"query", bson.M{k: v}})
+	}
+
+	err := db.Run(reqList, &resp)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
-	return resp["results"], nil
+	body, err := bson.MarshalJSON(resp["results"])
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	var jsonDocuments []map[string]interface{}
+	if err = json.Unmarshal(body, &jsonDocuments); err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return jsonDocuments, nil
 }
 
 func (this *mongoConn) MongoUpdate(colelection string, whereData, updateDate map[string]interface{}) error {
@@ -186,6 +242,7 @@ func (this *mongoConn) MongoUpdate(colelection string, whereData, updateDate map
 	_, err := c.Find(updateDate).Apply(change, nil)
 	return err
 }
+
 func setConnUrlOptions(connUrl string) string {
 	opts := make([]string, 0)
 	opts = append(opts, connUrl)
@@ -194,6 +251,7 @@ func setConnUrlOptions(connUrl string) string {
 	opts = append(opts, "&maxPoolSize=100")
 	return strings.Join(opts, "")
 }
+
 func keepAlive(s *mgo.Session, ctx context.Context) {
 	c := time.Tick(1 * time.Minute)
 	for {
