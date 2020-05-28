@@ -3,32 +3,30 @@ package udpkit
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Ripper/ctxkit"
 	"github.com/astaxie/beego/logs"
 	"net"
 	"os"
-	"time"
+	"sync"
 )
 
 var (
-	Conn        *net.UDPConn
-	repPeerList = make(chan PeerCmd, 10)
-	reqPeerList = make(chan PeerCmd, 10)
+	Conn *net.UDPConn
+	//repPeerList = make(chan *PeerCmd)
+	reqPeerList = make(chan *PeerCmd)
 
-	Nowtime = time.Now().String()
+	//get,give = bufkit.MakeRecycler()
 )
 
 // peer指令
 type PeerCmd struct {
-	peerAddr   net.UDPAddr
-	countTotal int
-	data       []byte
+	peerAddr *net.UDPAddr
+	data     []byte
 }
 
 // 监听udp端口
 func ListenUdpTask() {
 	logPre := "|listen|ips=%s|msg:%s"
-	listenIps := "127.0.0.1:8080"
+	listenIps := "127.0.0.1:8091"
 	netAddr, err := net.ResolveUDPAddr("udp", listenIps)
 	if err != nil {
 		logs.Error("@"+logPre, listenIps, err.Error())
@@ -38,23 +36,34 @@ func ListenUdpTask() {
 	if err != nil {
 		logs.Error("@"+logPre, listenIps, err.Error())
 		//PressEnterToExit()
+		return
 	}
 	defer Conn.Close()
 	logs.Info("Task:ListenUdpTask() start")
+
+	num := 100 * 100 * 20
+	p := NewWorkerPool(num)
+	p.Run()
+
+	var peerAddr *net.UDPAddr
+	var countTotal int
+	// 插入队列
+	var Cmd PeerCmd
 	for {
-		// Here must use make and give the lenth of buffer
 		data := make([]byte, 1024)
-		countTotal, peerAddr, err := Conn.ReadFromUDP(data)
+		// Here must use make and give the lenth of buffer
+		countTotal, peerAddr, err = Conn.ReadFromUDP(data)
 		if err != nil {
 			logs.Debug("@"+logPre, listenIps, "ReadFromUDP:"+err.Error())
 			continue
 		}
-		// 插入队列
-		var Cmd PeerCmd
-		Cmd.peerAddr = *peerAddr
-		Cmd.data = data
-		Cmd.countTotal = countTotal
-		reqPeerList <- Cmd
+
+		Cmd.peerAddr = peerAddr
+		Cmd.data = data[:countTotal]
+		//Conn.WriteToUDP(Cmd.data, &Cmd.peerAddr)
+		// give <- data
+		//Conn.WriteToUDP(Cmd.data, &Cmd.peerAddr)
+		p.JobQueue <- &Cmd
 	}
 }
 
@@ -65,7 +74,6 @@ func ListenUdpTask() {
 //		go	Worker(i)
 //	}
 //	go addWorder()
-//
 //}
 
 //func addWorder()  {
@@ -73,33 +81,34 @@ func ListenUdpTask() {
 //
 //	}
 //}
-func Worker(i int) {
-	count := 0
-	for {
-		select {
-		case data := <-reqPeerList:
-			count++
-			fmt.Println(i, string(data.data[:data.countTotal]), count)
-			repPeerList <- data
-		case <-time.After(1 * time.Minute):
-			return
-		}
-	}
-}
+//func Worker(i int) {
+//	var data *PeerCmd
+//	for {
+//		select {
+//		case data = <- reqPeerList:
+//			//repPeerList <- data
+//			fmt.Println(i,string(data.data))
+//			Conn.WriteToUDP(data.data, data.peerAddr)
+//		//case <-time.After(1 bee* time.Minute):
+//		//	return
+//		}
+//	}
+//}
 
-// 返回peer指令
-func RepPeerCmdTask() {
-	logs.Info("Task:RepPeerCmdTask() start")
-	ctx, _ := ctxkit.CtxAdd()
-	for {
-		select {
-		case data := <-repPeerList:
-			Conn.WriteToUDP(data.data, &data.peerAddr)
-		case <-ctx.Done():
-			return
-		}
-	}
-}
+//// 返回peer指令
+//func RepPeerCmdTask() {
+//	logs.Info("Task:RepPeerCmdTask() start")
+//	//ctx, _ := ctxkit.CtxAdd()
+//	var data PeerCmd
+//	for {
+//		select {
+//		case data = <-repPeerList:
+//			Conn.WriteToUDP(data.data, &data.peerAddr)
+//		//case <-ctx.Done():
+//		//	return
+//		}
+//	}
+//}
 
 func UdpClent(addr string, data map[string]interface{}) ([]byte, error) {
 	conn, err := net.Dial("udp", addr)
@@ -110,8 +119,11 @@ func UdpClent(addr string, data map[string]interface{}) ([]byte, error) {
 	defer conn.Close()
 
 	body, _ := json.Marshal(data)
-	conn.Write([]byte(body))
-
+	_, err = conn.Write([]byte(body))
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(string(body))
 	var msg [1024]byte
 	l, err := conn.Read(msg[0:])
 	if err != nil {
@@ -119,4 +131,188 @@ func UdpClent(addr string, data map[string]interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return msg[:l], nil
+}
+
+//type Job interface {
+//	Do()
+//}
+
+func (this *PeerCmd) Do() {
+	fmt.Println("num:", this.data)
+	//time.Sleep(1 * 1 * time.Second)
+	Conn.WriteToUDP(this.data, this.peerAddr)
+}
+
+type Worker struct {
+	JobQueue chan *PeerCmd
+}
+
+func NewWorker() Worker {
+	return Worker{JobQueue: make(chan *PeerCmd)}
+}
+
+func (w Worker) Run(wq chan chan *PeerCmd) {
+	go func() {
+		for {
+			wq <- w.JobQueue
+			select {
+			case job := <-w.JobQueue:
+				job.Do()
+			}
+		}
+	}()
+
+}
+
+type WorkerPool struct {
+	workerlen   int
+	JobQueue    chan *PeerCmd
+	WorkerQueue chan chan *PeerCmd
+}
+
+func NewWorkerPool(workerlen int) *WorkerPool {
+	return &WorkerPool{
+		workerlen:   workerlen,
+		JobQueue:    make(chan *PeerCmd),
+		WorkerQueue: make(chan chan *PeerCmd, workerlen),
+	}
+}
+func (wp *WorkerPool) Run() {
+	fmt.Println("初始化worker")
+	//初始化worker
+	for i := 0; i < wp.workerlen; i++ {
+		worker := NewWorker()
+		worker.Run(wp.WorkerQueue)
+	}
+	// 循环获取可用的worker,往worker中写job
+	go func() {
+		for {
+			select {
+			case job := <-wp.JobQueue:
+				worker := <-wp.WorkerQueue
+				worker <- job
+			}
+		}
+	}()
+}
+
+var (
+	login = map[string]interface{}{
+		"cmd":     "login",
+		"lanips":  []string{"192.168.100.254:44471"},
+		"nattype": 1,
+	}
+	keepalive = map[string]interface{}{
+		"cmd":      "keepalive",
+		"streamid": "05071246553639577026050703298691",
+		"order":    1,
+		"nattype":  1,
+	}
+	peerlist = map[string]interface{}{
+		"cmd":      "peerlist",
+		"streamid": "05071246553639577026050703298691",
+		"order":    1,
+	}
+	cache = map[string]interface{}{
+		"cmd": "cache",
+		"data": []map[string]interface{}{
+			{
+				"streamid": "05071246553639577026050703298691",
+				"order":    1,
+				"lasttime": 1590030441,
+			},
+		},
+		"nattype": 1,
+	}
+	//body map[string]interface{} = peerlist
+	list = []map[string]interface{}{login, keepalive, cache}
+)
+
+//"183.60.143.82:3030"
+func Peerclient(ip string, port int) {
+	i := 0
+	wg := sync.WaitGroup{}
+	for i < 2 {
+		wg.Add(1)
+		i++
+		go func(i int) {
+
+			defer wg.Add(-1)
+			remoteip := net.ParseIP(ip)
+			rAddr := &net.UDPAddr{IP: remoteip, Port: port}
+			logs.Info("peerclient() start", i, rAddr)
+			conn, err := net.DialUDP("udp", nil, rAddr)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			msgNum := 0
+			for msgNum < 100000 {
+				msgNum++
+				//body, _ := json.Marshal(keepalive)
+				fmt.Printf("%d号udp消息:%d \n", i, msgNum)
+				//if _, err := conn.Write([]byte(body)); err != nil {
+				//	fmt.Println(err)
+				//	return
+				//}
+				//
+
+				for _, msg := range list {
+					body, _ := json.Marshal(msg)
+					if _, err := conn.Write([]byte(body)); err != nil {
+						fmt.Println(err)
+						return
+					}
+					msg := make([]byte, 1024)
+					n, _ := conn.Read(msg)
+					fmt.Println(string(msg[:n]))
+				}
+			}
+			conn.Close()
+		}(i)
+	}
+	wg.Wait()
+}
+
+//"183.60.143.82:3030"
+func Tcpclient(port int) {
+	i := 0
+	wg := sync.WaitGroup{}
+	for i < 2 {
+		wg.Add(1)
+		i++
+		go func(i int) {
+			defer wg.Add(-1)
+			conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			defer conn.Close()
+			msgNum := 0
+			for msgNum < 100000 {
+				msgNum++
+				//body, _ := json.Marshal(keepalive)
+				fmt.Printf("%d号udp消息:%d \n", i, msgNum)
+				//if _, err := conn.Write([]byte(body)); err != nil {
+				//	fmt.Println(err)
+				//	return
+				//}
+				//	time.Sleep(10 * time.Second)
+				//msg := make([]byte, 1024)
+				//conn.Read(msg)
+				for _, msg := range list {
+					body, _ := json.Marshal(msg)
+					if _, err := conn.Write([]byte(body)); err != nil {
+						fmt.Println(err)
+						return
+					}
+					msg := make([]byte, 1024)
+					conn.Read(msg)
+				}
+			}
+		}(i)
+	}
+	wg.Wait()
 }
