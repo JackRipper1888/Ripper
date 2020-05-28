@@ -1,12 +1,17 @@
 package mapkit
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 // 总的map
 type ConcurrentMap []*ConcurrentMapShared
 
 // 默认分片数
-const SHARE_COUNT int = 64
+var (
+	SHARE_COUNT int = 64
+)
 
 // 单个map分片
 type ConcurrentMapShared struct {
@@ -15,11 +20,13 @@ type ConcurrentMapShared struct {
 }
 
 // 新建一个map
-func NewConcurrentMap() *ConcurrentMap {
+func NewConcurrentMap(share_cont int) *ConcurrentMap {
+	SHARE_COUNT = share_cont
 	m := make(ConcurrentMap, SHARE_COUNT)
 	for i := 0; i < SHARE_COUNT; i++ {
 		m[i] = &ConcurrentMapShared{
 			items: map[string]interface{}{},
+			mu:    sync.RWMutex{},
 		}
 	}
 	return &m
@@ -52,6 +59,7 @@ func (m ConcurrentMap) Set(key string, value interface{}) {
 // Get 获取key对应的value
 func (m ConcurrentMap) Get(key string) (value interface{}, ok bool) {
 	sharedMap := m.GetSharedMap(key) // 找到对应的分片map
+	fmt.Println(uint(fnv32(key)) % uint(SHARE_COUNT))
 	sharedMap.mu.RLock()             // 加锁(读锁定)
 	value, ok = sharedMap.items[key] // 取值
 	sharedMap.mu.RUnlock()           // 解锁
