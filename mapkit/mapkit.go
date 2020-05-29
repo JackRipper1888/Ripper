@@ -137,3 +137,15 @@ func (m ConcurrentMap) Keys() []string {
 	}
 	return keys
 }
+
+func (m ConcurrentMap) Range(f func(k string, v interface{}) bool) {
+	for _, mp := range m {
+		mp.mu.RLock()
+		for k, v := range mp.items {
+			if !f(k, v) {
+				return
+			}
+		}
+		mp.mu.RUnlock()
+	}
+}
