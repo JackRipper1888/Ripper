@@ -143,6 +143,7 @@ func (m ConcurrentMap) Range(f func(k string, v interface{}) bool) {
 		mp.mu.RLock()
 		for k, v := range mp.items {
 			if !f(k, v) {
+				mp.mu.RUnlock()
 				return
 			}
 		}

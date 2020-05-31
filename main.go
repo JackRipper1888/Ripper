@@ -8,7 +8,6 @@ import (
 	"log"
 	_ "net/http/pprof"
 	"sync"
-	"time"
 )
 
 var (
@@ -44,9 +43,42 @@ func (es *echoServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.
 //func (es *echoServer) OnShutdown(svr gnet.Server) {
 //	fmt.Println("撤退")
 //}
+var (
+	WinBytes = sync.Map{}
+)
+
+type qData struct {
+	RecvBytes int64
+	SendBytes int64
+}
 
 func main() {
-	var port int = 8091
+
+	//for _,v  := range udpkit.List{
+	//	appId := v["appid"].(string)
+	//	recvBytes := v["data"].(map[string]int64)["q_recv_source_bytes"]
+	//	sendBytes := v["data"].(map[string]int64)["q_send_player_bytes"]
+	//	bodyBytes, isExist := WinBytes.Load(appId)
+	//	if isExist {
+	//		WinBytes.Store(appId, qData{
+	//			RecvBytes: bodyBytes.(qData).RecvBytes + recvBytes,
+	//			SendBytes: bodyBytes.(qData).SendBytes + sendBytes,
+	//		})
+	//		//recvBytes += bodyBytes.(qData).RecvBytes
+	//		//sendBytes += bodyBytes.(qData).SendBytes
+	//	} else {
+	//		WinBytes.Store(appId, qData{
+	//			RecvBytes: recvBytes,
+	//			SendBytes: sendBytes,
+	//		})
+	//	}
+	//}
+	//WinBytes.Range(func(key, value interface{}) bool {
+	//	fmt.Println(key,value)
+	//	WinBytes.Delete(key)
+	//	return true
+	//})
+
 	//go Peerclient(port)
 	//echo := new(echoServer)
 	//log.Fatal(gnet.Serve(echo, fmt.Sprintf("tcp://:%d", 9000), gnet.WithMulticore(true)))
@@ -57,8 +89,9 @@ func main() {
 	//pool, _ := ants.NewPool(poolSize, ants.WithNonblocking(true))
 	//defer pool.Release()
 
-	go udpkit.Peerclient("192.168.100.200", port)
-	time.Sleep(24 * time.Hour)
+	var port int = 8001
+	udpkit.Peerclient("183.60.143.82", port)
+
 	//p := goroutine.Default()
 	//defer p.Release()
 

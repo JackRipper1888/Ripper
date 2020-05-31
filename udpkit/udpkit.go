@@ -199,22 +199,26 @@ func (wp *WorkerPool) Run() {
 var (
 	login = map[string]interface{}{
 		"cmd":     "login",
+		"appid":   "250",
 		"lanips":  []string{"192.168.100.254:44471"},
 		"nattype": 1,
 	}
 	keepalive = map[string]interface{}{
 		"cmd":      "keepalive",
+		"appid":    "250",
 		"streamid": "05071246553639577026050703298691",
 		"order":    1,
 		"nattype":  1,
 	}
 	peerlist = map[string]interface{}{
 		"cmd":      "peerlist",
+		"appid":    "250",
 		"streamid": "05071246553639577026050703298691",
 		"order":    1,
 	}
 	cache = map[string]interface{}{
-		"cmd": "cache",
+		"cmd":   "cache",
+		"appid": "250",
 		"data": []map[string]interface{}{
 			{
 				"streamid": "05071246553639577026050703298691",
@@ -224,8 +228,45 @@ var (
 		},
 		"nattype": 1,
 	}
+	state1 = map[string]interface{}{
+		"cmd":      "state",
+		"appid":    "250",
+		"platform": 1,
+		"data": map[string]int64{
+			"q_recv_source_bytes": 100,
+			"q_send_player_bytes": 100,
+		},
+	}
+	state2 = map[string]interface{}{
+		"cmd":      "state",
+		"appid":    "251",
+		"platform": 1,
+		"data": map[string]int64{
+			"q_recv_source_bytes": 100,
+			"q_send_player_bytes": 100,
+		},
+	}
+	state3 = map[string]interface{}{
+		"cmd":      "state",
+		"appid":    "250",
+		"platform": 2,
+		"data": map[string]int64{
+			"q_recv_source_bytes": 100,
+			"q_send_player_bytes": 100,
+		},
+	}
+	state4 = map[string]interface{}{
+		"cmd":      "state",
+		"appid":    "251",
+		"platform": 2,
+		"data": map[string]int64{
+			"q_recv_source_bytes": 100,
+			"q_send_player_bytes": 100,
+		},
+	}
 	//body map[string]interface{} = peerlist
-	list = []map[string]interface{}{login, keepalive, cache}
+	//list = []map[string]interface{}{login, keepalive, cache,state}
+	list = []map[string]interface{}{state3, state4}
 )
 
 //"183.60.143.82:3030"
@@ -248,25 +289,20 @@ func Peerclient(ip string, port int) {
 			}
 
 			msgNum := 0
-			for msgNum < 100000 {
+			for msgNum < 10000 {
 				msgNum++
-				//body, _ := json.Marshal(keepalive)
 				fmt.Printf("%d号udp消息:%d \n", i, msgNum)
-				//if _, err := conn.Write([]byte(body)); err != nil {
-				//	fmt.Println(err)
-				//	return
-				//}
-				//
-
 				for _, msg := range list {
 					body, _ := json.Marshal(msg)
 					if _, err := conn.Write([]byte(body)); err != nil {
 						fmt.Println(err)
 						return
 					}
+
 					msg := make([]byte, 1024)
 					n, _ := conn.Read(msg)
 					fmt.Println(string(msg[:n]))
+					fmt.Println("----")
 				}
 			}
 			conn.Close()
