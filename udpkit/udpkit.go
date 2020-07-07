@@ -29,17 +29,17 @@ func ListenUdpTask() {
 	listenIps := "127.0.0.1:8091"
 	netAddr, err := net.ResolveUDPAddr("udp", listenIps)
 	if err != nil {
-		logs.Error("@"+logPre, listenIps, err.Error())
+		fmt.Println("@"+logPre, listenIps, err.Error())
 		//PressEnterToExit()
 	}
 	Conn, err = net.ListenUDP("udp", netAddr)
 	if err != nil {
-		logs.Error("@"+logPre, listenIps, err.Error())
+		fmt.Println("@"+logPre, listenIps, err.Error())
 		//PressEnterToExit()
 		return
 	}
 	defer Conn.Close()
-	logs.Info("Task:ListenUdpTask() start")
+	fmt.Println("Task:ListenUdpTask() start")
 
 	num := 100 * 100 * 20
 	p := NewWorkerPool(num)
@@ -54,7 +54,7 @@ func ListenUdpTask() {
 		// Here must use make and give the lenth of buffer
 		countTotal, peerAddr, err = Conn.ReadFromUDP(data)
 		if err != nil {
-			logs.Debug("@"+logPre, listenIps, "ReadFromUDP:"+err.Error())
+			fmt.Println("@"+logPre, listenIps, "ReadFromUDP:"+err.Error())
 			continue
 		}
 

@@ -1,8 +1,8 @@
 package sockit
 
 import (
+	"Ripper/ctxkit"
 	"fmt"
-	"github.com/Ripper/ctxkit"
 	"github.com/astaxie/beego/logs"
 	"runtime"
 	"testing"

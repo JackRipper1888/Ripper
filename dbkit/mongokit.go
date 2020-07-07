@@ -1,11 +1,11 @@
 package dbkit
 
 import (
+	"Ripper/ctxkit"
 	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/Ripper/ctxkit"
 	"github.com/astaxie/beego/logs"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

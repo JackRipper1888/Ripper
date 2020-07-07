@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"testing"
-	"tracker/utils"
 )
 
 var (
@@ -16,9 +15,9 @@ var (
 
 func GetConfInfo() AllConfig {
 	confDir := Path + "/confkit/tracker.conf"
-	confFilePath := utils.InitCfgFilePath(confDir)
+	confFilePath := InitCfgFilePath(confDir)
 	config := AllConfig{}
-	err := utils.GetConfig(confFilePath, &config)
+	err := GetConfig(confFilePath, &config)
 	if err != nil {
 		panic(err)
 	}

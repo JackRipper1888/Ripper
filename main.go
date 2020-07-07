@@ -1,9 +1,9 @@
 package main
 
 import (
+	"Ripper/udpkit"
 	"flag"
 	"fmt"
-	"github.com/Ripper/udpkit"
 	"github.com/panjf2000/gnet"
 	"log"
 	_ "net/http/pprof"
