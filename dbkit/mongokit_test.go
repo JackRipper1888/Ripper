@@ -1,8 +1,8 @@
 package dbkit
 
 import (
+	"Ripper/ctxkit"
 	"fmt"
-	"github.com/Ripper/ctxkit"
 	"testing"
 )
 

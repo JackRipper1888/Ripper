@@ -1,9 +1,9 @@
 package httpkit
 
 import (
+	"Ripper/errkit"
 	"bytes"
 	"encoding/json"
-	"github.com/Ripper/errkit"
 	"github.com/astaxie/beego/logs"
 	"github.com/bitly/go-simplejson"
 	"io/ioutil"
