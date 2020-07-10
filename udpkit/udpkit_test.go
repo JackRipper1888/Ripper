@@ -1,85 +1,14 @@
 package udpkit
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/Ripper/ctxkit"
+	"Ripper/ctxkit"
 	"github.com/astaxie/beego/logs"
 	"sync"
 	"testing"
-	"time"
 )
 
 var wg = sync.WaitGroup{}
 
-//
-//var (
-//
-//	login = map[string]interface{}{
-//		"cmd":      "login",
-//		"lanips": []string{"192.168.100.254:44471"},
-//		"nattype":    1,
-//	}
-//	keepalive = map[string]interface{}{
-//		"cmd":      "keepalive",
-//		"streamid": "05071246553639577026050703298691",
-//		"nattype":    1,
-//	}
-//	peerlist = map[string]interface{}{
-//		"cmd":      "peerlist",
-//		"streamid": "05071246553639577026050703298691",
-//		"order":    1,
-//	}
-//	cache = map[string]interface{}{
-//		"cmd":      "peerlist",
-//		"data": []map[string]interface{}{
-//			{
-//				"streamid":"05071246553639577026050703298691",
-//				"order":1,
-//				"lasttime":1590030441,
-//			},
-//		},
-//		"nattype":    1,
-//	}
-//	body map[string]interface{} = cache
-//)
-//"183.60.143.82:3030"
-//func peerclient() {
-//	i := 0
-//	wg :=sync.WaitGroup{}
-//	for i < 100 {
-//		wg.Add(1)
-//		i++
-//		go func(i int){
-//			logs.Info("peerclient() start",i)
-//			defer wg.Add(-1)
-//			remoteip := net.ParseIP("183.60.143.82")
-//			rAddr := &net.UDPAddr{IP: remoteip, Port: 8001}
-//
-//			conn, err := net.DialUDP("udp", nil, rAddr)
-//			if err != nil {
-//				fmt.Println(err)
-//				return
-//			}
-//			msgNum := 0
-//			for msgNum < 100000{
-//				msgNum++
-//				body, _ := json.Marshal(body)
-//				fmt.Printf("%d号udp消息:%d \n",i,msgNum)
-//				if _, err := conn.Write([]byte(body)); err != nil {
-//					fmt.Println(err)
-//					return
-//				}
-//
-//				msg := make([]byte, 1024)
-//				conn.Read(msg)
-//
-//			}
-//			conn.Close()
-//		}(i)
-//	}
-//	wg.Wait()
-//}
 func TestListenUdpTask(t *testing.T) {
 	//demo()
 	//开启udp客户端
@@ -112,19 +41,68 @@ var (
 			"point_X": 104.00,
 			"point_Y": 20.00,
 		}}
+	peer_state = map[string]interface{}{
+		"cmd":      "state",
+		"appid":    "asagdquhw",
+		"platform": 4,
+		"data": map[string]interface{}{
+			"source_recv_len": 6000,
+			"p2p_recv_len":    1024,
+			"p2p_send_len":    1024,
+		},
+	}
+	peer_state2 = map[string]interface{}{
+		"cmd":      "state",
+		"appid":    "asagdquhw",
+		"platform": 2,
+		"data": map[string]interface{}{
+			"source_recv_len": 6000,
+			"p2p_recv_len":    1024,
+			"p2p_send_len":    1024,
+		},
+	}
+	peer_state3 = map[string]interface{}{
+		"cmd":      "state",
+		"appid":    "666",
+		"platform": 4,
+		"data": map[string]interface{}{
+			"source_recv_len": 6000,
+			"p2p_recv_len":    1024,
+			"p2p_send_len":    1024,
+		},
+	}
+	tracker_addr = "192.168.1.215:8091"
+
 	serveraddr  = "183.60.143.82:5000"
 	serveraddr1 = "192.168.100.200:5000"
 )
 
+//go test -v --run TestUdpClient udpkit/udpkit_test.go udpkit/udpkit.go
 func TestUdpClient(t *testing.T) {
-	data, err := UdpClent(serveraddr, geoNear)
-	if err != nil {
-		logs.Error(err)
+	i := 0
+	for i < 100 {
+		_, err := UdpClent(tracker_addr, peer_state)
+		if err != nil {
+			logs.Error(err)
+		}
+		//_, err = UdpClent(tracker_addr, peer_state2)
+		//if err != nil {
+		//	logs.Error(err)
+		//}
+		//_, err = UdpClent(tracker_addr, peer_state3)
+		//if err != nil {
+		//	logs.Error(err)
+		//}
+		i++
 	}
-	resultInfo := make(map[string]interface{}, 0)
-	json.Unmarshal(data, &resultInfo)
-	fmt.Println("reading", resultInfo)
-
-	//Tcpclient(9000)
-	time.Sleep(24 * time.Hour)
+	//_, err := UdpClent(tracker_addr, peer_state)
+	//if err != nil {
+	//	logs.Error(err)
+	//}
+	//resultInfo := make(map[string]interface{}, 0)
+	//json.Unmarshal(data, &resultInfo)
+	//fmt.Println("reading", resultInfo)
+	//
+	////Tcpclient(9000)
+	//time.Sleep(24 * time.Hour)
 }

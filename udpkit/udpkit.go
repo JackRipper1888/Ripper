@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"time"
 )
 
 var (
@@ -125,12 +126,12 @@ func UdpClent(addr string, data map[string]interface{}) ([]byte, error) {
 	}
 	fmt.Println(string(body))
 	var msg [1024]byte
-	l, err := conn.Read(msg[0:])
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	return msg[:l], nil
+	//l, err := conn.Read(msg[0:])
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return nil, err
+	//}
+	return msg[:], nil
 }
 
 //type Job interface {
@@ -198,17 +199,18 @@ func (wp *WorkerPool) Run() {
 
 var (
 	login = map[string]interface{}{
-		"cmd":     "login",
-		"appid":   "250",
-		"lanips":  []string{"192.168.100.254:44471"},
-		"nattype": 1,
+		"cmd":           "login",
+		"appid":         "250",
+		"intranet_addr": "192.168.0.11:2020",
+		"lanips":        []string{"192.168.0.11:2020"},
+		"nattype":       1,
 	}
 	keepalive = map[string]interface{}{
-		"cmd":      "keepalive",
-		"appid":    "250",
-		"streamid": "05071246553639577026050703298691",
-		"order":    1,
-		"nattype":  1,
+		"cmd":           "keepalive",
+		"appid":         "250",
+		"intranet_addr": "192.168.0.11:2020",
+		"streamid":      "05071246553639577026050703298691",
+		"order":         1,
 	}
 	peerlist = map[string]interface{}{
 		"cmd":      "peerlist",
@@ -216,17 +218,49 @@ var (
 		"streamid": "05071246553639577026050703298691",
 		"order":    1,
 	}
-	cache = map[string]interface{}{
-		"cmd":   "cache",
-		"appid": "250",
+	cache1 = map[string]interface{}{
+		"cmd":           "cache",
+		"appid":         "250",
+		"cache_type":    10,
+		"intranet_addr": "192.168.0.11:2020",
 		"data": []map[string]interface{}{
 			{
-				"streamid": "05071246553639577026050703298691",
+				"streamid": "98691",
+				"order":    1,
+				"lasttime": 1590030441,
+			},
+			{
+				"streamid": "98682",
 				"order":    1,
 				"lasttime": 1590030441,
 			},
 		},
 		"nattype": 1,
+	}
+	cache2 = map[string]interface{}{
+		"cmd":           "cache",
+		"appid":         "250",
+		"cache_type":    10,
+		"intranet_addr": "192.168.0.11:2020",
+		"data": []map[string]interface{}{
+			{
+				"streamid": "98691",
+				"order":    1,
+				"lasttime": 1590030441,
+			},
+			{
+				"streamid": "98673",
+				"order":    1,
+				"lasttime": 1590030441,
+			},
+		},
+		"nattype": 1,
+	}
+	delete_cache = map[string]interface{}{
+		"cmd":           "delete_cache",
+		"appid":         "250",
+		"intranet_addr": "192.168.0.11:2020",
+		"stream_ids":    []string{"98691"},
 	}
 	state1 = map[string]interface{}{
 		"cmd":      "state",
@@ -269,46 +303,63 @@ var (
 	list = []map[string]interface{}{state3, state4}
 )
 
-//"183.60.143.82:3030"
 func Peerclient(ip string, port int) {
-	i := 0
-	wg := sync.WaitGroup{}
-	for i < 2 {
-		wg.Add(1)
-		i++
-		go func(i int) {
-
-			defer wg.Add(-1)
-			remoteip := net.ParseIP(ip)
-			rAddr := &net.UDPAddr{IP: remoteip, Port: port}
-			logs.Info("peerclient() start", i, rAddr)
-			conn, err := net.DialUDP("udp", nil, rAddr)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-
-			msgNum := 0
-			for msgNum < 10000 {
-				msgNum++
-				fmt.Printf("%d号udp消息:%d \n", i, msgNum)
-				for _, msg := range list {
-					body, _ := json.Marshal(msg)
-					if _, err := conn.Write([]byte(body)); err != nil {
-						fmt.Println(err)
-						return
-					}
-
-					msg := make([]byte, 1024)
-					n, _ := conn.Read(msg)
-					fmt.Println(string(msg[:n]))
-					fmt.Println("----")
-				}
-			}
-			conn.Close()
-		}(i)
+	remoteip := net.ParseIP(ip)
+	rAddr := &net.UDPAddr{IP: remoteip, Port: port}
+	logs.Info("peerclient() start", rAddr)
+	conn, err := net.DialUDP("udp", nil, rAddr)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-	wg.Wait()
+
+	body, _ := json.Marshal(login)
+	if _, err := conn.Write([]byte(body)); err != nil {
+		fmt.Println(err)
+		return
+	}
+	msg := make([]byte, 1024)
+	n, _ := conn.Read(msg)
+	fmt.Println(string(msg[:n]))
+
+	go func() {
+		for {
+			select {
+			case <-time.After(2 * time.Second):
+				body, _ := json.Marshal(keepalive)
+				if _, err := conn.Write([]byte(body)); err != nil {
+					fmt.Println(err)
+					return
+				}
+
+				msg := make([]byte, 1024)
+				n, _ := conn.Read(msg)
+				fmt.Println(string(msg[:n]))
+			}
+		}
+	}()
+
+	time.Sleep(5 * time.Second)
+	body, _ = json.Marshal(cache1)
+	if _, err := conn.Write([]byte(body)); err != nil {
+		fmt.Println(err)
+		return
+	}
+	msg = make([]byte, 1024)
+	n, _ = conn.Read(msg)
+	fmt.Println(string(msg[:n]))
+	fmt.Println("----")
+
+	body, _ = json.Marshal(delete_cache)
+	if _, err := conn.Write([]byte(body)); err != nil {
+		fmt.Println(err)
+		return
+	}
+	msg = make([]byte, 1024)
+	n, _ = conn.Read(msg)
+	fmt.Println(string(msg[:n]))
+	fmt.Println("----")
+	time.Sleep(1 * time.Minute)
 }
 
 //"183.60.143.82:3030"
