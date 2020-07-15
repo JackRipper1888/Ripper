@@ -2,7 +2,7 @@ package dbkit
 
 import (
 	"fmt"
-	"github.com/Ripper/errkit"
+	"Ripper/errkit"
 	"github.com/go-redis/redis"
 	"strings"
 	"sync"
