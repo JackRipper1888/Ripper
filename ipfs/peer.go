@@ -1,5 +1,4 @@
 package ipfs
-
 import (
 	"context"
 	"errors"
@@ -214,7 +213,6 @@ func (ps *PeeringService) Stop() error {
 func (ps *PeeringService) AddPeer(info peer.AddrInfo) {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
-
 	if handler, ok := ps.peers[info.ID]; ok {
 		logger.Infow("updating addresses", "peer", info.ID, "addrs", info.Addrs)
 		handler.setAddrs(info.Addrs)

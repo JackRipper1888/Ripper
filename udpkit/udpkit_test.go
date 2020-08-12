@@ -1,6 +1,7 @@
 package udpkit
 
 import (
+	"time"
 	"Ripper/ctxkit"
 	"github.com/astaxie/beego/logs"
 	"sync"
@@ -71,7 +72,7 @@ var (
 			"p2p_send_len":    1024,
 		},
 	}
-	tracker_addr = "192.168.1.215:8091"
+	tracker_addr = "23.224.251.243:8091"
 
 	serveraddr  = "183.60.143.82:5000"
 	serveraddr1 = "192.168.100.200:5000"
@@ -81,28 +82,14 @@ var (
 func TestUdpClient(t *testing.T) {
 	i := 0
 	for i < 100 {
-		_, err := UdpClent(tracker_addr, peer_state)
-		if err != nil {
-			logs.Error(err)
+		for _, v := range List {
+			_, err := UdpClent(tracker_addr, v)
+			if err != nil {
+				logs.Error(err)
+			}
+			i++
+			time.Sleep(time.Second)
 		}
-		//_, err = UdpClent(tracker_addr, peer_state2)
-		//if err != nil {
-		//	logs.Error(err)
-		//}
-		//_, err = UdpClent(tracker_addr, peer_state3)
-		//if err != nil {
-		//	logs.Error(err)
-		//}
-		i++
 	}
-	//_, err := UdpClent(tracker_addr, peer_state)
-	//if err != nil {
-	//	logs.Error(err)
-	//}
-	//resultInfo := make(map[string]interface{}, 0)
-	//json.Unmarshal(data, &resultInfo)
-	//fmt.Println("reading", resultInfo)
-	//
-	////Tcpclient(9000)
-	//time.Sleep(24 * time.Hour)
+
 }
