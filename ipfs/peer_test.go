@@ -36,7 +36,6 @@ func TestPeeringService(t *testing.T) {
 	h2 := newNode(ctx, t)
 	h3 := newNode(ctx, t)
 	h4 := newNode(ctx, t)
-
 	// peer 1 -> 2
 	ps1.AddPeer(peer.AddrInfo{ID: h2.ID(), Addrs: h2.Addrs()})
 

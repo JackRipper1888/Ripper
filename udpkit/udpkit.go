@@ -3,7 +3,6 @@ package udpkit
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
 	"net"
 	"os"
 	"sync"
@@ -114,6 +113,7 @@ func ListenUdpTask() {
 func UdpClent(addr string, data map[string]interface{}) ([]byte, error) {
 	conn, err := net.Dial("udp", addr)
 	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 		return nil, err
 	}
@@ -126,11 +126,11 @@ func UdpClent(addr string, data map[string]interface{}) ([]byte, error) {
 	}
 	fmt.Println(string(body))
 	var msg [1024]byte
-	//l, err := conn.Read(msg[0:])
-	//if err != nil {
-	//	fmt.Println(err)
-	//	return nil, err
-	//}
+	_, err = conn.Read(msg[0:])
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
 	return msg[:], nil
 }
 
@@ -299,67 +299,63 @@ var (
 		},
 	}
 	//body map[string]interface{} = peerlist
-	//list = []map[string]interface{}{login, keepalive, cache,state}
+	List = []map[string]interface{}{login, keepalive}
 	list = []map[string]interface{}{state3, state4}
 )
 
-func Peerclient(ip string, port int) {
+func UdpClient(ip string, port int,body []byte) {
 	remoteip := net.ParseIP(ip)
 	rAddr := &net.UDPAddr{IP: remoteip, Port: port}
-	logs.Info("peerclient() start", rAddr)
 	conn, err := net.DialUDP("udp", nil, rAddr)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-
-	body, _ := json.Marshal(login)
-	if _, err := conn.Write([]byte(body)); err != nil {
+	if _, err := conn.Write(body); err != nil {
 		fmt.Println(err)
 		return
 	}
-	msg := make([]byte, 1024)
-	n, _ := conn.Read(msg)
-	fmt.Println(string(msg[:n]))
+	fmt.Println("UdpClient write success",body)
+	//msg := make([]byte, 1024)
+	//n, _ := conn.Read(msg)
+	//fmt.Println(string(msg[:n]))
+}
+var (
+	RequestChannel = make(chan []byte,2)
+)
+func UdpServer(address string) {
+	pc, err := net.ListenPacket("udp", address)
+	if err != nil {
+		panic(err)
+		return
+	}
 
 	go func() {
 		for {
-			select {
-			case <-time.After(2 * time.Second):
-				body, _ := json.Marshal(keepalive)
-				if _, err := conn.Write([]byte(body)); err != nil {
-					fmt.Println(err)
-					return
-				}
-
-				msg := make([]byte, 1024)
-				n, _ := conn.Read(msg)
-				fmt.Println(string(msg[:n]))
+			buffer := make([]byte, 1024)
+			n, addr, err := pc.ReadFrom(buffer)
+			if err != nil {
+				panic(err)
+				return
 			}
+			fmt.Printf("packet-received: bytes=%d from=%s\n",n, addr.String())
+			deadline := time.Now().Add(1*time.Second)
+			err = pc.SetWriteDeadline(deadline)
+			if err != nil {
+				panic(err)
+				return
+			}
+			RequestChannel <- buffer[:n]
+			// Write the packet's contents back to the client.
+			// n, err = pc.WriteTo(buffer[:n], addr)
+			// if err != nil {
+			// 	panic(err)
+			// 	return
+			// }
+			// fmt.Printf("packet-written: bytes=%d to=%s\n", n, addr.String())
 		}
 	}()
 
-	time.Sleep(5 * time.Second)
-	body, _ = json.Marshal(cache1)
-	if _, err := conn.Write([]byte(body)); err != nil {
-		fmt.Println(err)
-		return
-	}
-	msg = make([]byte, 1024)
-	n, _ = conn.Read(msg)
-	fmt.Println(string(msg[:n]))
-	fmt.Println("----")
-
-	body, _ = json.Marshal(delete_cache)
-	if _, err := conn.Write([]byte(body)); err != nil {
-		fmt.Println(err)
-		return
-	}
-	msg = make([]byte, 1024)
-	n, _ = conn.Read(msg)
-	fmt.Println(string(msg[:n]))
-	fmt.Println("----")
-	time.Sleep(1 * time.Minute)
 }
 
 //"183.60.143.82:3030"
