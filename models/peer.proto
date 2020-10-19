@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package models;
+
+message FindNode{
+    string peer_id    = 1;
+    int32  peer_count = 10;
+}
+
+message FindNodeResponse {
+    string   peer_id = 1;
+    repeated PeerInfo peerlist = 2;
+}
+
+message PeerInfo {
+    string peer_id = 1;
+    string addr    = 2;
+}
+
+message FindValue {
+    string key = 1;
+    int32 leve = 2;
+}
+
+message FindValueResponse {
+    string key = 1;
+    int32 leve = 2;
+    repeated PeerInfo peerlist = 3;
+    repeated PeerInfo nearpeerlist = 4;
+}
