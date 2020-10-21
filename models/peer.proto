@@ -2,9 +2,14 @@ syntax = "proto3";
 
 package models;
 
+message HeartBeat{
+    string peer_id = 1;
+    int64  timeStamp = 2;
+}
+
 message FindNode{
     string peer_id    = 1;
-    int32  peer_count = 10;
+    int32  peer_count = 2;
 }
 
 message FindNodeResponse {
@@ -15,6 +20,7 @@ message FindNodeResponse {
 message PeerInfo {
     string peer_id = 1;
     string addr    = 2;
+    int64  timeStamp = 3;  
 }
 
 message FindValue {

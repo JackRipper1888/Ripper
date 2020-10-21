@@ -29,5 +29,4 @@ type server struct {
 	Wanips         string `toml:"wanips"`
 	Loglevel       int    `toml:"loglevel"`
 	LogPath        string `toml:"log_path"`
-	TrackerLogPath string `toml:"tracker_log_path"`
 }
