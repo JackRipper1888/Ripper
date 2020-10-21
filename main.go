@@ -21,12 +21,14 @@ func main() {
 	local_id := peer.GenerateId()
 	ctx := context.Background()
 
-	go handler.Monitor()
+	go handler.MonitorTask()
 	go handler.ResultCmdTask()
 
 	for i := 0; i < runtime.NumCPU(); i++ {
-		go handler.HandleResponse()
+		go handler.HandleResponseTask()
 	}
+
+	go handler.FindNodeResponseTask(local_id)
 
 	err := handler.InitRoutingTable(ctx, retrieve.ConvertPeerID(local_id))
 	if err != nil {

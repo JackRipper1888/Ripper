@@ -3,8 +3,8 @@
 package retrieve
 
 import (
-	"container/list"
 	"time"
+	"container/list"
 
 	"github.com/libp2p/go-libp2p-core/peer"
 )
