@@ -30,13 +30,13 @@ func main() {
 
 	handler.ConnListen <- 0
 	
-	err := handler.InitRoutingTable(ctx, retrieve.ID(local_id), constant.REGISTER_ADDR)
+	err := handler.InitRoutingTable(ctx, retrieve.ConvertPeerID(local_id), constant.REGISTER_ADDR)
 	if err != nil {
 		logkit.Err(err)
 		return
 	}
 
-	go handler.FindNodeResponseTask(retrieve.ID(local_id))
+	go handler.FindNodeResponseTask(retrieve.ConvertPeerID(local_id))
 
 	err = providers.InitProvider(ctx, local_id)
 	if err != nil {
