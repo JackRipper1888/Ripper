@@ -256,7 +256,6 @@ func (rt *RoutingTable) MarkAllPeersIrreplaceable() {
 	}
 }
 
-
 // GetPeerInfos returns the peer information that we've stored in the buckets
 func (rt *RoutingTable) GetPeerInfos() []PeerInfo {
 	rt.tabLock.RLock()
