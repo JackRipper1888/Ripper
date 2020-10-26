@@ -3,10 +3,12 @@ package handler
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/libp2p/go-libp2p-core/peer"
 
+	"Ripper/constant"
 	"Ripper/models"
 	"Ripper/providers"
 	"Ripper/retrieve"
@@ -21,14 +23,15 @@ func HeartBeat(val *models.RequrestInfo) {
 		return
 	}
 
-	_, err = rt.TryAddPeer(peer.ID(body.GetPeerId()), true, true)
+	_, err = rt.TryAddPeer(peer.ID(body.PeerId), true, true)
 	if err != nil {
 		logkit.Err(err)
 		return
 	}
-	
-	peerList.Set(body.GetPeerId(), &models.PeerInfo{
-		PeerId:    body.GetPeerId(),
+
+	logkit.Succf("HeartBeat Set peer:%s", string(body.PeerId))
+	peerList.Set(string(body.PeerId), &models.PeerInfo{
+		PeerId:    body.PeerId,
 		Addr:      val.Addr.String(),
 		TimeStamp: body.GetTimeStamp(),
 	})
@@ -46,9 +49,11 @@ func FindNode(val *models.RequrestInfo) {
 	peerInfolist := make([]*models.PeerInfo, 0)
 	for _, peerId := range peeridList {
 		values, isOk := peerList.Get(string(peerId))
-		if !isOk {
+		if !isOk || peerId == peer.ID(body.PeerId) {
+			logkit.Err(body.PeerId, peerId)
 			continue
 		}
+		//logkit.Err(,peerId,peer.ID(body.PeerId))
 		peerInfolist = append(peerInfolist, (values.(*models.PeerInfo)))
 	}
 
@@ -57,6 +62,14 @@ func FindNode(val *models.RequrestInfo) {
 		logkit.Err(err)
 		return
 	}
+
+	logkit.Succf("FindNode Add peer:%s From peer_ips:%s", string(body.PeerId), val.Addr.String())
+
+	peerList.Set(string(body.PeerId), &models.PeerInfo{
+		PeerId:    body.PeerId,
+		Addr:      val.Addr.String(),
+		TimeStamp: time.Now().Unix(),
+	})
 
 	ResponseBody := &models.FindNodeResponse{
 		PeerId:   body.PeerId,
@@ -71,7 +84,7 @@ func FindNode(val *models.RequrestInfo) {
 
 	peerResponse <- &models.ResponseInfo{
 		Addr: val.Addr,
-		Data: append([]byte{0x26}, resultData...),
+		Data: append([]byte{constant.FIND_NODE_RESPONSE}, resultData...),
 	}
 }
 
@@ -82,6 +95,7 @@ func FindNodeResponse(val *models.RequrestInfo) {
 		logkit.Err(err)
 		return
 	}
+	logkit.Succ(body.Peerlist," From peer_addr:",val.Addr.String())
 	//查找任务池发起
 	for _, peerInfo := range body.Peerlist {
 		_, err = rt.TryAddPeer(peer.ID(peerInfo.PeerId), true, true)
@@ -89,7 +103,9 @@ func FindNodeResponse(val *models.RequrestInfo) {
 			logkit.Err(err)
 			return
 		}
-		peerList.Set(peerInfo.PeerId, peerInfo)
+
+		logkit.Succf("FindNodeResponse Add peer:%s From peer_ips:%s", string(peerInfo.PeerId), val.Addr.String())
+		peerList.Set(string(peerInfo.PeerId), peerInfo)
 	}
 	findNodeResponseChan <- &body
 }
@@ -112,7 +128,7 @@ func FindValue(val *models.RequrestInfo) {
 		nearpeerlist := []*models.PeerInfo{}
 		for _, peerid := range nearpeers {
 			nearpeerlist = append(nearpeerlist, &models.PeerInfo{
-				PeerId: string(peerid),
+				PeerId: []byte(peerid),
 			})
 		}
 		responseBody.Nearpeerlist = nearpeerlist
@@ -120,7 +136,7 @@ func FindValue(val *models.RequrestInfo) {
 		peerlist := []*models.PeerInfo{}
 		for _, peerid := range peerList {
 			peerlist = append(peerlist, &models.PeerInfo{
-				PeerId: string(peerid),
+				PeerId: []byte(peerid),
 			})
 		}
 		responseBody.Peerlist = peerlist

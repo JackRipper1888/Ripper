@@ -1,7 +1,7 @@
 package main
 
 import (
-	"time"
+	"flag"
 	"context"
 	"runtime"
 
@@ -11,36 +11,38 @@ import (
 	"Ripper/peer"
 	"Ripper/constant"
 	
-	"tools/ctxkit"
 	"tools/logkit"
 )
 
 func main() {
+	flag.Parse()
 	logkit.LogInit(constant.LOG_PATH)
-
+	
 	local_id := peer.GenerateId()
+	
 	ctx := context.Background()
 
 	go handler.MonitorTask()
-	go handler.ResultCmdTask()
 
 	for i := 0; i < runtime.NumCPU(); i++ {
 		go handler.HandleResponseTask()
 	}
 
-	go handler.FindNodeResponseTask(local_id)
-
-	err := handler.InitRoutingTable(ctx, retrieve.ConvertPeerID(local_id))
+	handler.ConnListen <- 0
+	
+	err := handler.InitRoutingTable(ctx, retrieve.ID(local_id), constant.REGISTER_ADDR)
 	if err != nil {
 		logkit.Err(err)
 		return
 	}
+
+	go handler.FindNodeResponseTask(retrieve.ID(local_id))
 
 	err = providers.InitProvider(ctx, local_id)
 	if err != nil {
 		logkit.Err(err)
 		return
 	}
-	time.Sleep(20*time.Second)
-	ctxkit.CancelAll()
+	
+	handler.ResultCmdTask()
 }

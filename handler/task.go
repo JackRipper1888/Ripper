@@ -12,6 +12,7 @@ import (
 
 	"Ripper/constant"
 	"Ripper/models"
+	"Ripper/retrieve"
 )
 
 var (
@@ -22,31 +23,34 @@ var (
 
 	peerRequest  = make(chan *models.RequrestInfo, 1)
 	peerResponse = make(chan *models.ResponseInfo, 1)
+
+	ConnListen	= make(chan int)
 	Conn         *net.UDPConn
 )
 
 func MonitorTask() {
 	logkit.Info("task|MonitorTask running")
 	logPre := "|listen|ips=%s|msg:%s"
-	listenIps := ""
-	netAddr, err := net.ResolveUDPAddr("udp", listenIps)
+	listenAddr := constant.LISTEN_ADDR
+
+	netAddr, err := net.ResolveUDPAddr("udp", listenAddr)
 	if err != nil {
-		logkit.Err("@"+logPre, listenIps, err.Error())
+		logkit.Err("@"+logPre, listenAddr, err.Error())
 		return
 	}
 
 	Conn, err = net.ListenUDP("udp", netAddr)
 	if err != nil {
-		logkit.Err("@"+logPre, listenIps, err.Error())
+		logkit.Err("@"+logPre, listenAddr, err.Error())
 		return
 	}
-
+	<-ConnListen
 	defer Conn.Close()
 	for {
 		var bf models.RequrestInfo
 		bf.CountTotal, bf.Addr, err = Conn.ReadFromUDP(bf.Data[:])
 		if err != nil {
-			logkit.Err("@"+logPre, listenIps, "ReadFromUDP:"+err.Error())
+			logkit.Err("@"+logPre, listenAddr, "ReadFromUDP:"+err.Error())
 			continue
 		}
 		peerRequest <- &bf
@@ -60,13 +64,15 @@ func HandleResponseTask() {
 	for {
 		select {
 		case Val := <-peerRequest:
-			//logkit.Succf("peer_ips:%s state %v", Val.Addr.String(), Val.Data[:Val.CountTotal])
 			switch Val.Data[0] {
 			case constant.HEARTBEAT:
+				//logkit.Succf("HEARTBEAT peer_ips:%s state %v", Val.Addr.String(), Val.Data[0:Val.CountTotal])
 				HeartBeat(Val)
 			case constant.FIND_NODE:
+				//logkit.Succf("FIND_NODE peer_ips:%s state %v", Val.Addr.String(), Val.Data[:Val.CountTotal])	
 				FindNode(Val)
 			case constant.FIND_NODE_RESPONSE:
+				//logkit.Succf("FIND_NODE_RESPONSE peer_ips:%s state %v", Val.Addr.String(), Val.Data[:Val.CountTotal])
 				FindNodeResponse(Val)
 			case constant.FIND_VALUE:
 				FindValue(Val)
@@ -107,37 +113,41 @@ func pushMsg(Addr string, body []byte)  {
 		Data: body,
 	}
 }
-func FindNodeResponseTask(localId peer.ID) {
+func FindNodeResponseTask(localId retrieve.ID) {
 	for {
 		select {
 		case body := <-findNodeResponseChan:
 			if rt.Size() < 2000{
 				for _, v := range body.Peerlist {
-					body, err := proto.Marshal(&models.FindNode{PeerId: string(localId), PeerCount: 7})
+					body, err := proto.Marshal(&models.FindNode{PeerId: []byte(localId), PeerCount: 7})
 					if err != nil {
 						logkit.Err(err)
 						return
 					}
 					// data := encodekit.AESEncrypt(body,[]byte("1823eyachlkajsdk"))
-					pushMsg(v.Addr,append([]byte{0x25}, body...))
+					logkit.Succf("FindNode %s request %s ",string(localId),v.Addr)
+					pushMsg(v.Addr,append([]byte{constant.FIND_NODE}, body...))
 				}
 			}
-		case now := <-time.After(5* time.Millisecond):
+		case now := <-time.After(5* time.Minute):
 			//push heartbeat
 			nowTime := now.Unix()
-			timeOut := nowTime - int64(10*time.Millisecond)
+			timeOut := nowTime - int64(10*time.Minute)
+		
 			peerList.Range(func (k string,v interface{}) bool {
 				peerInfo := v.(*models.PeerInfo)
 				if peerInfo.GetTimeStamp() < timeOut{	
 					peerList.Delete(k)
 					rt.RemovePeer(peer.ID(k))
-				}else{
-					body, err := proto.Marshal(&models.HeartBeat{PeerId: string(localId), TimeStamp:nowTime })
+					logkit.Succ("delete peer_id :",peerInfo.PeerId)
+				} else {
+					body, err := proto.Marshal(&models.HeartBeat{PeerId: []byte(localId), TimeStamp:nowTime })
 					if err != nil {
 						logkit.Err(err)
 						return true
 					}
-					pushMsg(peerInfo.Addr,append([]byte{0x25}, body...))
+					logkit.Succf("HeartBeat push peer_ips:%s peer_id:%s",peerInfo.Addr,string(localId))
+					pushMsg(peerInfo.Addr,append([]byte{constant.HEARTBEAT}, body...))
 				}
 				return true
 			})

@@ -1,13 +1,12 @@
 package retrieve
 
 import (
-	"crypto/rand"
-	"encoding/binary"
 	//"fmt"
 	"time"
+	"crypto/rand"
+	"encoding/binary"
 
 	// "github.com/libp2p/go-libp2p-core/peer"
-
 	// mh "github.com/multiformats/go-multihash"
 )
 

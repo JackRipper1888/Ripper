@@ -120,13 +120,21 @@ func (b *bucket) remove(id peer.ID) bool {
 	return false
 }
 
-// func (b *bucket) moveToFront(id peer.ID) {
-// 	for e := b.list.Front(); e != nil; e = e.Next() {
-// 		if e.Value.(*PeerInfo).Id == id {
-// 			b.list.MoveToFront(e)
-// 		}
-// 	}
-// }
+func (b *bucket) moveToFront(id peer.ID) {
+	for e := b.list.Front(); e != nil; e = e.Next() {
+		if e.Value.(*PeerInfo).Id == id {
+			b.list.MoveToFront(e)
+		}
+	}
+}
+
+func(b *bucket) moveToBack(id peer.ID) {
+	for e := b.list.Front(); e != nil; e = e.Next() {
+		if e.Value.(*PeerInfo).Id == id {
+			b.list.MoveToBack(e)
+		}
+	}
+}
 
 func (b *bucket) pushFront(p *PeerInfo) {
 	b.list.PushFront(p)

@@ -26,7 +26,8 @@ type AllConfig struct {
 	Server server `toml:"server"`
 }
 type server struct {
-	Wanips         string `toml:"wanips"`
-	Loglevel       int    `toml:"loglevel"`
-	LogPath        string `toml:"log_path"`
+	ListenAddr   string `toml:"listen_addr"`
+	RegisterAddr string `toml:"register_addr"`
+	Loglevel     int    `toml:"loglevel"`
+	LogPath      string `toml:"log_path"`
 }

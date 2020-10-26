@@ -1,6 +1,7 @@
 package retrieve
 
 import (
+	"tools/logkit"
 	"context"
 	"errors"
 	"fmt"
@@ -255,6 +256,7 @@ func (rt *RoutingTable) MarkAllPeersIrreplaceable() {
 	}
 }
 
+
 // GetPeerInfos returns the peer information that we've stored in the buckets
 func (rt *RoutingTable) GetPeerInfos() []PeerInfo {
 	rt.tabLock.RLock()
@@ -493,6 +495,7 @@ func (rt *RoutingTable) GetDiversityStats() []peerdiversity.CplDiversityStats {
 // the caller is responsible for the locking
 func (rt *RoutingTable) bucketIdForPeer(p peer.ID) int {
 	peerID := ConvertPeerID(p)
+	logkit.Err(len(peerID), len(rt.local))
 	cpl := CommonPrefixLen(peerID, rt.local)
 	bucketID := cpl
 	if bucketID >= len(rt.buckets) {
