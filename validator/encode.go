@@ -4,7 +4,7 @@ import(
 )
 func Encode(){
 	rsa.GenerateKey()
-
+	
 }
 
 func Code(){

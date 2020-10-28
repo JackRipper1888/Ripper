@@ -12,6 +12,7 @@ import (
 	"Ripper/models"
 	"Ripper/providers"
 	"Ripper/retrieve"
+
 	"tools/logkit"
 )
 
@@ -22,19 +23,21 @@ func HeartBeat(val *models.RequrestInfo) {
 		logkit.Err(err)
 		return
 	}
-
-	_, err = rt.TryAddPeer(peer.ID(body.PeerId), true, true)
-	if err != nil {
-		logkit.Err(err)
-		return
+	//whitelist checking
+	_, isExit := constant.PeerList.Get(string(body.PeerId))
+	if isExit{
+		_, err = constant.LocalRT.TryAddPeer(peer.ID(body.PeerId), true, true)
+		if err != nil {
+			logkit.Err(err)
+			return
+		}
+		// logkit.Succf("HeartBeat Set peer:%s", string(body.PeerId))
+		constant.PeerList.Set(string(body.PeerId), &models.PeerInfo{
+			PeerId:    body.PeerId,
+			Addr:      val.Addr.String(),
+			TimeStamp: body.GetTimeStamp(),
+		})
 	}
-
-	logkit.Succf("HeartBeat Set peer:%s", string(body.PeerId))
-	peerList.Set(string(body.PeerId), &models.PeerInfo{
-		PeerId:    body.PeerId,
-		Addr:      val.Addr.String(),
-		TimeStamp: body.GetTimeStamp(),
-	})
 }
 
 func FindNode(val *models.RequrestInfo) {
@@ -44,20 +47,19 @@ func FindNode(val *models.RequrestInfo) {
 		logkit.Err(err)
 		return
 	}
-	peeridList := rt.NearestPeers([]byte(body.PeerId), int(body.PeerCount))
+	peeridList := constant.LocalRT.NearestPeers([]byte(body.PeerId), int(body.PeerCount))
 
 	peerInfolist := make([]*models.PeerInfo, 0)
 	for _, peerId := range peeridList {
-		values, isOk := peerList.Get(string(peerId))
+		values, isOk := constant.PeerList.Get(string(peerId))
 		if !isOk || peerId == peer.ID(body.PeerId) {
-			logkit.Err(body.PeerId, peerId)
+
 			continue
 		}
-		//logkit.Err(,peerId,peer.ID(body.PeerId))
 		peerInfolist = append(peerInfolist, (values.(*models.PeerInfo)))
 	}
-
-	_, err = rt.TryAddPeer(peer.ID(body.PeerId), true, true)
+	
+	_, err = constant.LocalRT.TryAddPeer(peer.ID(body.PeerId), true, true)
 	if err != nil {
 		logkit.Err(err)
 		return
@@ -65,7 +67,7 @@ func FindNode(val *models.RequrestInfo) {
 
 	logkit.Succf("FindNode Add peer:%s From peer_ips:%s", string(body.PeerId), val.Addr.String())
 
-	peerList.Set(string(body.PeerId), &models.PeerInfo{
+	constant.PeerList.Set(string(body.PeerId), &models.PeerInfo{
 		PeerId:    body.PeerId,
 		Addr:      val.Addr.String(),
 		TimeStamp: time.Now().Unix(),
@@ -95,19 +97,36 @@ func FindNodeResponse(val *models.RequrestInfo) {
 		logkit.Err(err)
 		return
 	}
-	logkit.Succ(body.Peerlist," From peer_addr:",val.Addr.String())
+	//logkit.Succ(body.Peerlist, " From peer_addr:", val.Addrç.String())
 	//查找任务池发起
+	resultList := make([]*models.PeerInfo, 0)
 	for _, peerInfo := range body.Peerlist {
-		_, err = rt.TryAddPeer(peer.ID(peerInfo.PeerId), true, true)
+		_, err = constant.LocalRT.TryAddPeer(peer.ID(peerInfo.PeerId), true, true)
 		if err != nil {
 			logkit.Err(err)
 			return
 		}
-
-		logkit.Succf("FindNodeResponse Add peer:%s From peer_ips:%s", string(peerInfo.PeerId), val.Addr.String())
-		peerList.Set(string(peerInfo.PeerId), peerInfo)
+		isOk := constant.PeerList.LoadOrStore(string(peerInfo.PeerId), peerInfo)
+		if isOk {
+			continue
+		}
+		//logkit.Succf("FindNodeResponse Add peer:%s From peer_ips:%s", string(peerInfo.PeerId), val.Addr.String())
+		resultList = append(resultList, peerInfo)
 	}
-	findNodeResponseChan <- &body
+
+	if constant.LocalRT.Size() < constant.TABLESIZE{
+		localId := retrieve.ConvertPeerID(constant.LocalID)
+		for _,v := range resultList{
+			body, err := proto.Marshal(&models.FindNode{PeerId: []byte(localId), PeerCount:constant.FINDNODESIZE})
+			if err != nil {
+				logkit.Err(err)
+				return
+			}
+			//logkit.Succf("FindNode %s request %s ", string(localId), v.Addr)
+			pushMsg(v.Addr, append([]byte{constant.FIND_NODE}, body...))
+		}
+	}
+	
 }
 
 func FindValue(val *models.RequrestInfo) {
@@ -124,7 +143,7 @@ func FindValue(val *models.RequrestInfo) {
 	responseBody.Leve = body.Leve + 1
 	responseBody.Key = body.Key
 	if len(peerList) == 0 {
-		nearpeers := rt.NearestPeers(retrieve.ID(body.Key), 10)
+		nearpeers := constant.LocalRT.NearestPeers(retrieve.ID(body.Key), 10)
 		nearpeerlist := []*models.PeerInfo{}
 		for _, peerid := range nearpeers {
 			nearpeerlist = append(nearpeerlist, &models.PeerInfo{
@@ -186,5 +205,4 @@ func FindValueResponse(val *models.RequrestInfo) {
 			}
 		}
 	}
-
 }

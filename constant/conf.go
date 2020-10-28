@@ -23,11 +23,18 @@ func GetConfInfo() AllConfig {
 }
 
 type AllConfig struct {
-	Server server `toml:"server"`
+	Server       server `toml:"server"`
+	RoutingTable table  `toml:"routing_table"`
 }
 type server struct {
-	ListenAddr   string `toml:"listen_addr"`
-	RegisterAddr string `toml:"register_addr"`
-	Loglevel     int    `toml:"loglevel"`
-	LogPath      string `toml:"log_path"`
+	ListenAddr           string `toml:"listen_addr"`
+	RegisterAddr         string `toml:"register_addr"`
+	LogPath              string `toml:"log_path"`
+	HeartbeatLatencyTime int64  `toml:"heartbeat_latency_time"`
+}
+
+type table struct {
+	FindNodeSize int32 `toml:"find_node_size"`
+	BucketSize   int   `toml:"bucket_size"`
+	TableSize    int   `toml:"table_size"`
 }

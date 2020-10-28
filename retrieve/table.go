@@ -1,7 +1,6 @@
 package retrieve
 
 import (
-	"tools/logkit"
 	"context"
 	"errors"
 	"fmt"
@@ -494,7 +493,6 @@ func (rt *RoutingTable) GetDiversityStats() []peerdiversity.CplDiversityStats {
 // the caller is responsible for the locking
 func (rt *RoutingTable) bucketIdForPeer(p peer.ID) int {
 	peerID := ConvertPeerID(p)
-	logkit.Err(len(peerID), len(rt.local))
 	cpl := CommonPrefixLen(peerID, rt.local)
 	bucketID := cpl
 	if bucketID >= len(rt.buckets) {

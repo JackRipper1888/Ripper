@@ -12,11 +12,16 @@ const (
 	FIND_KEY           = 0x23
 	FIND_KEY_RESPONESE = 0x24
 
-	TimeFormat = "2006-01-02 15:04:05"
+	PEER_INFO_STORE_PATH   = "/conf/peer_info"
 )
 
 var (
-	LOG_PATH      = ConfData.Server.LogPath
-	LISTEN_ADDR   = ConfData.Server.ListenAddr
-	REGISTER_ADDR = ConfData.Server.RegisterAddr
+	LOG_PATH               = ConfData.Server.LogPath
+	LISTEN_ADDR            = ConfData.Server.ListenAddr
+	REGISTER_ADDR          = ConfData.Server.RegisterAddr
+	HEARTBEAT_LATENCY_TIME = ConfData.Server.HeartbeatLatencyTime
+
+	FINDNODESIZE = ConfData.RoutingTable.FindNodeSize
+	BUCKETSIZE   = ConfData.RoutingTable.BucketSize
+	TABLESIZE    = ConfData.RoutingTable.TableSize
 )
