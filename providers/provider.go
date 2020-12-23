@@ -7,7 +7,7 @@ import(
 	dssync "github.com/ipfs/go-datastore/sync"
 
 	"Ripper/constant"
-	"tools/ctxkit"
+	"github.com/JackRipper1888/killer/ctxkit"
 )	
 var (
 	Pm *providers.ProviderManager

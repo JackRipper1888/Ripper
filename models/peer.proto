@@ -23,14 +23,54 @@ message PeerInfo {
     int64  timeStamp = 3;  
 }
 
-message FindValue {
+message FindProviders {
+    bytes  peer_id = 1;
+    string addr = 2;
+    bytes  key = 3;
+    int32  leve = 4;
+}
+message FindProvidersResponse {
     bytes key = 1;
     int32 leve = 2;
+    repeated PeerInfo peerlist = 3;
+}
+message FindValue {
+    bytes  peer_id = 1;
+    string addr = 2;
+    bytes  key = 3;
+    int32  leve = 4;
 }
 
 message FindValueResponse {
     bytes key = 1;
     int32 leve = 2;
     repeated PeerInfo peerlist = 3;
-    repeated PeerInfo nearpeerlist = 4;
+}
+
+message FindNearUser{
+    bytes peer_id = 1;
+    int32 leve = 2;
+    string addr = 3;
+}
+
+message FindNearUserResponse{
+    bytes peer_id = 1;
+    int32 leve = 2;
+    repeated PeerInfo peerlist = 3;
+}
+
+message FindUser{
+    bytes key = 1;
+    int32 leve = 2;
+}
+
+message FindUserResponse{
+    bytes key = 1;
+    int32 leve = 2;
+    repeated PeerInfo peerlist = 3;
+}
+
+message Cache {
+    string url = 1;
+    string stream_type = 2;
 }

@@ -1,42 +1,47 @@
 package handler
 
 import (
-	"os"
+	//"syscall"
 	"net"
-	"time"
+	"os"
 	"path/filepath"
+	"runtime"
+	"time"
 
-	"tools/ctxkit"
-	"tools/logkit"
-	"tools/mapkit"
-	"tools/iokit"
+	"github.com/JackRipper1888/killer/ctxkit"
+	"github.com/JackRipper1888/killer/iokit"
+	"github.com/JackRipper1888/killer/logkit"
+	"github.com/JackRipper1888/killer/mapkit"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/libp2p/go-libp2p-core/peer"
 
 	"Ripper/constant"
 	"Ripper/models"
+	"Ripper/pubsub"
 	"Ripper/retrieve"
 )
 
 var (
+	pub            = pubsub.NewPublisher(100*time.Millisecond, 10)
+	streamPeerInfo = mapkit.NewConcurrentSyncMap(64)
 
-	streamInfo = mapkit.NewConcurrentSyncMap(64)
+	findNodeResponseChan = make(chan []*models.PeerInfo, runtime.NumCPU())
 
-	findNodeResponseChan = make(chan []*models.PeerInfo, 1)
-
-	peerRequest  = make(chan *models.RequrestInfo, 1)
-	peerResponse = make(chan *models.ResponseInfo, 1)
+	peerRequest  = make(chan *models.RequrestInfo, runtime.NumCPU())
+	peerResponse = make(chan *models.ResponseInfo, runtime.NumCPU())
 
 	ConnListen = make(chan int)
 	Conn       *net.UDPConn
 )
 
-func MonitorTask() {
-	logkit.Info("task|MonitorTask running")
+func MakeListenAddr() {
 	logPre := "|listen|ips=%s|msg:%s"
 	listenAddr := constant.LISTEN_ADDR
-
+	if constant.DEBUG {
+		//本地绑
+		listenAddr = "0.0.0.0:0"
+	}
 	netAddr, err := net.ResolveUDPAddr("udp", listenAddr)
 	if err != nil {
 		logkit.Err("@"+logPre, listenAddr, err.Error())
@@ -48,13 +53,19 @@ func MonitorTask() {
 		logkit.Err("@"+logPre, listenAddr, err.Error())
 		return
 	}
-	<-ConnListen
-	defer Conn.Close()
+}
+func MonitorTask() {
+	//syscall.ForkExec()
+	logkit.Info("task|MonitorTask running")
+
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	var err error
 	for {
 		var bf models.RequrestInfo
 		bf.CountTotal, bf.Addr, err = Conn.ReadFromUDP(bf.Data[:])
 		if err != nil {
-			logkit.Err("@"+logPre, listenAddr, "ReadFromUDP:"+err.Error())
+			logkit.Err(err)
 			continue
 		}
 		peerRequest <- &bf
@@ -62,27 +73,39 @@ func MonitorTask() {
 }
 
 // 处理peer发送的指令
-func HandleResponseTask() {
+func Worker() {
 	logkit.Info("task|HandleResponseTask running")
 	ctx, _ := ctxkit.CtxAdd()
 	for {
 		select {
 		case Val := <-peerRequest:
 			switch Val.Data[0] {
+			//节点之间通信
 			case constant.HEARTBEAT:
-				//logkit.Succf("HEARTBEAT peer_ips:%s state %v", Val.Addr.String(), Val.Data[0:Val.CountTotal])
 				HeartBeat(Val)
 			case constant.FIND_NODE:
-				//logkit.Succf("FIND_NODE peer_ips:%s state %v", Val.Addr.String(), Val.Data[:Val.CountTotal])
 				FindNode(Val)
 			case constant.FIND_NODE_RESPONSE:
-				//logkit.Succf("FIND_NODE_RESPONSE peer_ips:%s state %v", Val.Addr.String(), Val.Data[:Val.CountTotal])
 				FindNodeResponse(Val)
+			case constant.FIND_PROVIDERS:
+				FindProviders(Val)
+			case constant.FIND_PROVIDERS_RESPONSE:
+				FindProvidersResponse(Val)
+
+			case constant.FIND_NEAR_USER:
+				FindNearUser(Val)
+			case constant.FIND_NEAR_USER_RESPONSE:
+				FindNearUserResponse(Val)
+
+			//外部调用
 			case constant.FIND_VALUE:
 				FindValue(Val)
-			case constant.FIND_VALUE_RESPONSE:
-				FindValueResponse(Val)
+			case constant.FIND_USER:
+				FindUser(Val)
+			case constant.CACHE:
+				FindUser(Val)
 			}
+			runtime.Gosched()
 		case <-ctx.Done():
 			return
 		}
@@ -90,10 +113,13 @@ func HandleResponseTask() {
 }
 
 // 返回peer指令
-func ResultCmdTask() {
+func ResultTask() {
 	logkit.Info("task|ResultCmdTask running")
 	ctx, _ := ctxkit.CtxAdd()
-	//var Val *models.ResultInfo
+
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
 	for {
 		select {
 		case Val := <-peerResponse:
@@ -118,48 +144,48 @@ func pushMsg(Addr string, body []byte) {
 func HeartBeatTask(latency_time int64) {
 	localId := retrieve.ConvertPeerID(constant.LocalID)
 	ctx, _ := ctxkit.CtxAdd()
-	period := time.Duration(latency_time)*time.Second
+	period := time.Duration(latency_time) * time.Second
 	for {
 		select {
 		case now := <-time.After(period):
 			//push heartbeat
 			nowTime := now.Unix()
 			timeOut := nowTime - 2*latency_time
-			peers := make([]*models.PeerInfo,0,constant.TABLESIZE)
+			peers := make([]*models.PeerInfo, 0, constant.TABLE_SIZE)
 			constant.PeerList.Range(func(k string, v interface{}) bool {
 				peerInfo := v.(*models.PeerInfo)
 				if peerInfo.GetTimeStamp() < timeOut {
 					//logkit.Err(nowTime,peerInfo.GetTimeStamp(),timeOut)
 					constant.PeerList.Delete(k)
 					constant.LocalRT.RemovePeer(peer.ID(k))
-					logkit.Succ("delete peer_id :", peerInfo.PeerId)
+					logkit.Succf("delete peer_ips:%s peer_id:%x", peerInfo.Addr, peerInfo.PeerId)
 				} else {
-					peers = append(peers,peerInfo)
+					peers = append(peers, peerInfo)
 					body, err := proto.Marshal(&models.HeartBeat{PeerId: []byte(localId), TimeStamp: nowTime})
 					if err != nil {
 						logkit.Err(err)
 						return true
 					}
-					logkit.Succf("HeartBeat push peer_ips:%s peer_id:%s", peerInfo.Addr, string(localId))
+					logkit.Succf("HeartBeat push peer_ips:%s peer_id:%x", peerInfo.Addr, peerInfo.PeerId)
 					pushMsg(peerInfo.Addr, append([]byte{constant.HEARTBEAT}, body...))
 				}
 				return true
 			})
 
 			//持久化存储
-			if len(peers) > 0{
+			if len(peers) > 0 {
 				dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 				confDir := dir + constant.PEER_INFO_STORE_PATH
-				body,err := proto.Marshal(&models.FindNodeResponse{
-					PeerId: []byte(constant.LocalID),
+				body, err := proto.Marshal(&models.FindNodeResponse{
+					PeerId:   []byte(constant.LocalID),
 					Peerlist: peers,
 				})
 				if err != nil {
 					logkit.Err(err)
 					return
 				}
-	
-				err = iokit.Write(confDir,body)
+
+				err = iokit.Write(confDir, body)
 				if err != nil {
 					logkit.Err(err)
 					return
@@ -167,20 +193,20 @@ func HeartBeatTask(latency_time int64) {
 			}
 
 			//insert new peer when the table is missing peer
-			if constant.LocalRT.Size() < constant.TABLESIZE {
-				ID := constant.LocalRT.NearestPeers(localId,int(constant.FINDNODESIZE))
-				body, err := proto.Marshal(&models.FindNode{PeerId: []byte(localId), PeerCount: constant.FINDNODESIZE})
+			if constant.LocalRT.Size() < constant.TABLE_SIZE {
+				peerIDs := constant.LocalRT.NearestPeers(localId, int(constant.FIND_NODE_SIZE))
+				body, err := proto.Marshal(&models.FindNode{PeerId: []byte(localId), PeerCount: constant.FIND_NODE_SIZE})
 				if err != nil {
 					logkit.Err(err)
 				}
-				for _, peerId := range ID {
-					peerInfo,isExist := constant.PeerList.Get(string(peerId))
+				for _, peerId := range peerIDs {
+					peerInfo, isExist := constant.PeerList.Get(string(peerId))
 					if isExist {
-						pushMsg(peerInfo.(*models.PeerInfo).GetAddr(),append([]byte{constant.FIND_NODE}, body...))
+						pushMsg(peerInfo.(*models.PeerInfo).GetAddr(), append([]byte{constant.FIND_NODE}, body...))
 					}
 				}
 			}
-		case <- ctx.Done():
+		case <-ctx.Done():
 			return
 		}
 	}

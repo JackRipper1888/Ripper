@@ -14,12 +14,12 @@ import (
 	"Ripper/models"
 	"Ripper/retrieve"
 
-	"tools/iokit"
-	"tools/mapkit"
+	"github.com/JackRipper1888/killer/iokit"
+	"github.com/JackRipper1888/killer/mapkit"
 )
 
 var (
-	PeerList   = mapkit.NewConcurrentSyncMap(64)
+	PeerList   = mapkit.NewConcurrentSyncMap(1024)
 	LocalID, LocalRT = InitRoutingTable()
 )
 
@@ -51,7 +51,7 @@ func InitRoutingTable() (peer.ID, *retrieve.RoutingTable) {
 
 	ps := pstore.NewMetrics()
 	local_id := retrieve.ConvertPeerID(peer.ID(loaclRoutingTable.PeerId))
-	rt, err := retrieve.NewRoutingTable(BUCKETSIZE, local_id, time.Minute, ps, 100*time.Minute, nil)
+	rt, err := retrieve.NewRoutingTable(BUCKET_SIZE, local_id, time.Minute, ps, 100*time.Minute, nil)
 	if err != nil {
 		panic(err)
 	}

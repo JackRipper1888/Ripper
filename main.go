@@ -7,35 +7,26 @@ import (
 	"Ripper/providers"
 	"Ripper/constant"
 	
-	"tools/logkit"
-	"tools/ctxkit"
+	"github.com/JackRipper1888/killer/logkit"
+	"github.com/JackRipper1888/killer/ctxkit"
 )
 
 func main() {
 	logkit.LogInit(constant.LOG_PATH)
 	
 	defer ctxkit.CancelAll()
+
+	providers.InitProvider()
+	handler.MakeListenAddr()
+	handler.InitRoutingTable()
+
 	go handler.MonitorTask()
 	
 	for i := 0; i < runtime.NumCPU(); i++ {
-		go handler.HandleResponseTask()
+		go handler.Worker()
 	}
 
-	handler.ConnListen <- 0
-	
-	err := handler.InitRoutingTable()
-	if err != nil {
-		logkit.Err(err)
-		return
-	}
+	go handler.ResultTask()
 
 	go handler.HeartBeatTask(constant.HEARTBEAT_LATENCY_TIME)
-
-	err = providers.InitProvider()
-	if err != nil {
-		logkit.Err(err)
-		return
-	}
-	
-	handler.ResultCmdTask()
 }

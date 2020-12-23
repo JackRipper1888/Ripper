@@ -377,6 +377,17 @@ func (rt *RoutingTable) NearestPeer(id ID) peer.ID {
 	return ""
 }
 
+// func (rt *RoutingTable) Peer(id ID) []peer.ID {
+// 	cpl := CommonPrefixLen(id, rt.local)
+	
+// 	rt.tabLock.RLock()
+
+// 	// Get bucket index or last bucket
+// 	if cpl >= len(rt.buckets) {
+// 		cpl = len(rt.buckets) - 1
+// 	}
+// }
+
 // NearestPeers returns a list of the 'count' closest peers to the given ID
 func (rt *RoutingTable) NearestPeers(id ID, count int) []peer.ID {
 	// This is the number of bits _we_ share with the key. All peers in this

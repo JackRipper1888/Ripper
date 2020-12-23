@@ -253,19 +253,155 @@ func (x *PeerInfo) GetTimeStamp() int64 {
 	return 0
 }
 
+type FindProviders struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PeerId []byte `protobuf:"bytes,1,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
+	Addr   string `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
+	Key    []byte `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	Leve   int32  `protobuf:"varint,4,opt,name=leve,proto3" json:"leve,omitempty"`
+}
+
+func (x *FindProviders) Reset() {
+	*x = FindProviders{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_peer_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FindProviders) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindProviders) ProtoMessage() {}
+
+func (x *FindProviders) ProtoReflect() protoreflect.Message {
+	mi := &file_peer_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindProviders.ProtoReflect.Descriptor instead.
+func (*FindProviders) Descriptor() ([]byte, []int) {
+	return file_peer_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *FindProviders) GetPeerId() []byte {
+	if x != nil {
+		return x.PeerId
+	}
+	return nil
+}
+
+func (x *FindProviders) GetAddr() string {
+	if x != nil {
+		return x.Addr
+	}
+	return ""
+}
+
+func (x *FindProviders) GetKey() []byte {
+	if x != nil {
+		return x.Key
+	}
+	return nil
+}
+
+func (x *FindProviders) GetLeve() int32 {
+	if x != nil {
+		return x.Leve
+	}
+	return 0
+}
+
+type FindProvidersResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key      []byte      `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Leve     int32       `protobuf:"varint,2,opt,name=leve,proto3" json:"leve,omitempty"`
+	Peerlist []*PeerInfo `protobuf:"bytes,3,rep,name=peerlist,proto3" json:"peerlist,omitempty"`
+}
+
+func (x *FindProvidersResponse) Reset() {
+	*x = FindProvidersResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_peer_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FindProvidersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindProvidersResponse) ProtoMessage() {}
+
+func (x *FindProvidersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_peer_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindProvidersResponse.ProtoReflect.Descriptor instead.
+func (*FindProvidersResponse) Descriptor() ([]byte, []int) {
+	return file_peer_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *FindProvidersResponse) GetKey() []byte {
+	if x != nil {
+		return x.Key
+	}
+	return nil
+}
+
+func (x *FindProvidersResponse) GetLeve() int32 {
+	if x != nil {
+		return x.Leve
+	}
+	return 0
+}
+
+func (x *FindProvidersResponse) GetPeerlist() []*PeerInfo {
+	if x != nil {
+		return x.Peerlist
+	}
+	return nil
+}
+
 type FindValue struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Key  []byte `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	Leve int32  `protobuf:"varint,2,opt,name=leve,proto3" json:"leve,omitempty"`
+	PeerId []byte `protobuf:"bytes,1,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
+	Addr   string `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
+	Key    []byte `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	Leve   int32  `protobuf:"varint,4,opt,name=leve,proto3" json:"leve,omitempty"`
 }
 
 func (x *FindValue) Reset() {
 	*x = FindValue{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_peer_proto_msgTypes[4]
+		mi := &file_peer_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -278,7 +414,7 @@ func (x *FindValue) String() string {
 func (*FindValue) ProtoMessage() {}
 
 func (x *FindValue) ProtoReflect() protoreflect.Message {
-	mi := &file_peer_proto_msgTypes[4]
+	mi := &file_peer_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -291,7 +427,21 @@ func (x *FindValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindValue.ProtoReflect.Descriptor instead.
 func (*FindValue) Descriptor() ([]byte, []int) {
-	return file_peer_proto_rawDescGZIP(), []int{4}
+	return file_peer_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *FindValue) GetPeerId() []byte {
+	if x != nil {
+		return x.PeerId
+	}
+	return nil
+}
+
+func (x *FindValue) GetAddr() string {
+	if x != nil {
+		return x.Addr
+	}
+	return ""
 }
 
 func (x *FindValue) GetKey() []byte {
@@ -313,16 +463,15 @@ type FindValueResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Key          []byte      `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	Leve         int32       `protobuf:"varint,2,opt,name=leve,proto3" json:"leve,omitempty"`
-	Peerlist     []*PeerInfo `protobuf:"bytes,3,rep,name=peerlist,proto3" json:"peerlist,omitempty"`
-	Nearpeerlist []*PeerInfo `protobuf:"bytes,4,rep,name=nearpeerlist,proto3" json:"nearpeerlist,omitempty"`
+	Key      []byte      `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Leve     int32       `protobuf:"varint,2,opt,name=leve,proto3" json:"leve,omitempty"`
+	Peerlist []*PeerInfo `protobuf:"bytes,3,rep,name=peerlist,proto3" json:"peerlist,omitempty"`
 }
 
 func (x *FindValueResponse) Reset() {
 	*x = FindValueResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_peer_proto_msgTypes[5]
+		mi := &file_peer_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -335,7 +484,7 @@ func (x *FindValueResponse) String() string {
 func (*FindValueResponse) ProtoMessage() {}
 
 func (x *FindValueResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_peer_proto_msgTypes[5]
+	mi := &file_peer_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -348,7 +497,7 @@ func (x *FindValueResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindValueResponse.ProtoReflect.Descriptor instead.
 func (*FindValueResponse) Descriptor() ([]byte, []int) {
-	return file_peer_proto_rawDescGZIP(), []int{5}
+	return file_peer_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *FindValueResponse) GetKey() []byte {
@@ -372,9 +521,246 @@ func (x *FindValueResponse) GetPeerlist() []*PeerInfo {
 	return nil
 }
 
-func (x *FindValueResponse) GetNearpeerlist() []*PeerInfo {
+type FindNearUser struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PeerId []byte `protobuf:"bytes,1,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
+	Leve   int32  `protobuf:"varint,2,opt,name=leve,proto3" json:"leve,omitempty"`
+	Addr   string `protobuf:"bytes,3,opt,name=addr,proto3" json:"addr,omitempty"`
+}
+
+func (x *FindNearUser) Reset() {
+	*x = FindNearUser{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_peer_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FindNearUser) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindNearUser) ProtoMessage() {}
+
+func (x *FindNearUser) ProtoReflect() protoreflect.Message {
+	mi := &file_peer_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindNearUser.ProtoReflect.Descriptor instead.
+func (*FindNearUser) Descriptor() ([]byte, []int) {
+	return file_peer_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *FindNearUser) GetPeerId() []byte {
 	if x != nil {
-		return x.Nearpeerlist
+		return x.PeerId
+	}
+	return nil
+}
+
+func (x *FindNearUser) GetLeve() int32 {
+	if x != nil {
+		return x.Leve
+	}
+	return 0
+}
+
+func (x *FindNearUser) GetAddr() string {
+	if x != nil {
+		return x.Addr
+	}
+	return ""
+}
+
+type FindNearUserResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PeerId   []byte      `protobuf:"bytes,1,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
+	Leve     int32       `protobuf:"varint,2,opt,name=leve,proto3" json:"leve,omitempty"`
+	Peerlist []*PeerInfo `protobuf:"bytes,3,rep,name=peerlist,proto3" json:"peerlist,omitempty"`
+}
+
+func (x *FindNearUserResponse) Reset() {
+	*x = FindNearUserResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_peer_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FindNearUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindNearUserResponse) ProtoMessage() {}
+
+func (x *FindNearUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_peer_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindNearUserResponse.ProtoReflect.Descriptor instead.
+func (*FindNearUserResponse) Descriptor() ([]byte, []int) {
+	return file_peer_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *FindNearUserResponse) GetPeerId() []byte {
+	if x != nil {
+		return x.PeerId
+	}
+	return nil
+}
+
+func (x *FindNearUserResponse) GetLeve() int32 {
+	if x != nil {
+		return x.Leve
+	}
+	return 0
+}
+
+func (x *FindNearUserResponse) GetPeerlist() []*PeerInfo {
+	if x != nil {
+		return x.Peerlist
+	}
+	return nil
+}
+
+type FindUser struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key  []byte `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Leve int32  `protobuf:"varint,2,opt,name=leve,proto3" json:"leve,omitempty"`
+}
+
+func (x *FindUser) Reset() {
+	*x = FindUser{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_peer_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FindUser) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindUser) ProtoMessage() {}
+
+func (x *FindUser) ProtoReflect() protoreflect.Message {
+	mi := &file_peer_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindUser.ProtoReflect.Descriptor instead.
+func (*FindUser) Descriptor() ([]byte, []int) {
+	return file_peer_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *FindUser) GetKey() []byte {
+	if x != nil {
+		return x.Key
+	}
+	return nil
+}
+
+func (x *FindUser) GetLeve() int32 {
+	if x != nil {
+		return x.Leve
+	}
+	return 0
+}
+
+type FindUserResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key      []byte      `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Leve     int32       `protobuf:"varint,2,opt,name=leve,proto3" json:"leve,omitempty"`
+	Peerlist []*PeerInfo `protobuf:"bytes,3,rep,name=peerlist,proto3" json:"peerlist,omitempty"`
+}
+
+func (x *FindUserResponse) Reset() {
+	*x = FindUserResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_peer_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FindUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindUserResponse) ProtoMessage() {}
+
+func (x *FindUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_peer_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindUserResponse.ProtoReflect.Descriptor instead.
+func (*FindUserResponse) Descriptor() ([]byte, []int) {
+	return file_peer_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *FindUserResponse) GetKey() []byte {
+	if x != nil {
+		return x.Key
+	}
+	return nil
+}
+
+func (x *FindUserResponse) GetLeve() int32 {
+	if x != nil {
+		return x.Leve
+	}
+	return 0
+}
+
+func (x *FindUserResponse) GetPeerlist() []*PeerInfo {
+	if x != nil {
+		return x.Peerlist
 	}
 	return nil
 }
@@ -402,21 +788,55 @@ var file_peer_proto_rawDesc = []byte{
 	0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x70, 0x65, 0x65, 0x72, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04,
 	0x61, 0x64, 0x64, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x61, 0x64, 0x64, 0x72,
 	0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x53, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x03, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x53, 0x74, 0x61, 0x6d, 0x70, 0x22, 0x31,
-	0x0a, 0x09, 0x46, 0x69, 0x6e, 0x64, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b,
+	0x01, 0x28, 0x03, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x53, 0x74, 0x61, 0x6d, 0x70, 0x22, 0x62,
+	0x0a, 0x0d, 0x46, 0x69, 0x6e, 0x64, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x64, 0x65, 0x72, 0x73, 0x12,
+	0x17, 0x0a, 0x07, 0x70, 0x65, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c,
+	0x52, 0x06, 0x70, 0x65, 0x65, 0x72, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x64, 0x64, 0x72,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x61, 0x64, 0x64, 0x72, 0x12, 0x10, 0x0a, 0x03,
+	0x6b, 0x65, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x12,
+	0x0a, 0x04, 0x6c, 0x65, 0x76, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x6c, 0x65,
+	0x76, 0x65, 0x22, 0x6b, 0x0a, 0x15, 0x46, 0x69, 0x6e, 0x64, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x64,
+	0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b,
 	0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x12, 0x0a,
 	0x04, 0x6c, 0x65, 0x76, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x6c, 0x65, 0x76,
-	0x65, 0x22, 0x9d, 0x01, 0x0a, 0x11, 0x46, 0x69, 0x6e, 0x64, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x6c, 0x65, 0x76,
-	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x6c, 0x65, 0x76, 0x65, 0x12, 0x2c, 0x0a,
-	0x08, 0x70, 0x65, 0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32,
-	0x10, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x50, 0x65, 0x65, 0x72, 0x49, 0x6e, 0x66,
-	0x6f, 0x52, 0x08, 0x70, 0x65, 0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x12, 0x34, 0x0a, 0x0c, 0x6e,
-	0x65, 0x61, 0x72, 0x70, 0x65, 0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x04, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x10, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x50, 0x65, 0x65, 0x72, 0x49,
-	0x6e, 0x66, 0x6f, 0x52, 0x0c, 0x6e, 0x65, 0x61, 0x72, 0x70, 0x65, 0x65, 0x72, 0x6c, 0x69, 0x73,
-	0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x12, 0x2c, 0x0a, 0x08, 0x70, 0x65, 0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x03, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x50, 0x65, 0x65,
+	0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x70, 0x65, 0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x22,
+	0x5e, 0x0a, 0x09, 0x46, 0x69, 0x6e, 0x64, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x17, 0x0a, 0x07,
+	0x70, 0x65, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x70,
+	0x65, 0x65, 0x72, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x64, 0x64, 0x72, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x61, 0x64, 0x64, 0x72, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x6c,
+	0x65, 0x76, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x6c, 0x65, 0x76, 0x65, 0x22,
+	0x67, 0x0a, 0x11, 0x46, 0x69, 0x6e, 0x64, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x6c, 0x65, 0x76, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x6c, 0x65, 0x76, 0x65, 0x12, 0x2c, 0x0a, 0x08, 0x70, 0x65,
+	0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x6d,
+	0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x50, 0x65, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08,
+	0x70, 0x65, 0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x22, 0x4f, 0x0a, 0x0c, 0x46, 0x69, 0x6e, 0x64,
+	0x4e, 0x65, 0x61, 0x72, 0x55, 0x73, 0x65, 0x72, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x65, 0x65, 0x72,
+	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x70, 0x65, 0x65, 0x72, 0x49,
+	0x64, 0x12, 0x12, 0x0a, 0x04, 0x6c, 0x65, 0x76, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52,
+	0x04, 0x6c, 0x65, 0x76, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x64, 0x64, 0x72, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x61, 0x64, 0x64, 0x72, 0x22, 0x71, 0x0a, 0x14, 0x46, 0x69, 0x6e,
+	0x64, 0x4e, 0x65, 0x61, 0x72, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x65, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x0c, 0x52, 0x06, 0x70, 0x65, 0x65, 0x72, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6c, 0x65,
+	0x76, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x6c, 0x65, 0x76, 0x65, 0x12, 0x2c,
+	0x0a, 0x08, 0x70, 0x65, 0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x10, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x50, 0x65, 0x65, 0x72, 0x49, 0x6e,
+	0x66, 0x6f, 0x52, 0x08, 0x70, 0x65, 0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x22, 0x30, 0x0a, 0x08,
+	0x46, 0x69, 0x6e, 0x64, 0x55, 0x73, 0x65, 0x72, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x6c, 0x65,
+	0x76, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x6c, 0x65, 0x76, 0x65, 0x22, 0x66,
+	0x0a, 0x10, 0x46, 0x69, 0x6e, 0x64, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52,
+	0x03, 0x6b, 0x65, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x6c, 0x65, 0x76, 0x65, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x05, 0x52, 0x04, 0x6c, 0x65, 0x76, 0x65, 0x12, 0x2c, 0x0a, 0x08, 0x70, 0x65, 0x65, 0x72,
+	0x6c, 0x69, 0x73, 0x74, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x6d, 0x6f, 0x64,
+	0x65, 0x6c, 0x73, 0x2e, 0x50, 0x65, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x70, 0x65,
+	0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -431,24 +851,32 @@ func file_peer_proto_rawDescGZIP() []byte {
 	return file_peer_proto_rawDescData
 }
 
-var file_peer_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_peer_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_peer_proto_goTypes = []interface{}{
-	(*HeartBeat)(nil),         // 0: models.HeartBeat
-	(*FindNode)(nil),          // 1: models.FindNode
-	(*FindNodeResponse)(nil),  // 2: models.FindNodeResponse
-	(*PeerInfo)(nil),          // 3: models.PeerInfo
-	(*FindValue)(nil),         // 4: models.FindValue
-	(*FindValueResponse)(nil), // 5: models.FindValueResponse
+	(*HeartBeat)(nil),             // 0: models.HeartBeat
+	(*FindNode)(nil),              // 1: models.FindNode
+	(*FindNodeResponse)(nil),      // 2: models.FindNodeResponse
+	(*PeerInfo)(nil),              // 3: models.PeerInfo
+	(*FindProviders)(nil),         // 4: models.FindProviders
+	(*FindProvidersResponse)(nil), // 5: models.FindProvidersResponse
+	(*FindValue)(nil),             // 6: models.FindValue
+	(*FindValueResponse)(nil),     // 7: models.FindValueResponse
+	(*FindNearUser)(nil),          // 8: models.FindNearUser
+	(*FindNearUserResponse)(nil),  // 9: models.FindNearUserResponse
+	(*FindUser)(nil),              // 10: models.FindUser
+	(*FindUserResponse)(nil),      // 11: models.FindUserResponse
 }
 var file_peer_proto_depIdxs = []int32{
 	3, // 0: models.FindNodeResponse.peerlist:type_name -> models.PeerInfo
-	3, // 1: models.FindValueResponse.peerlist:type_name -> models.PeerInfo
-	3, // 2: models.FindValueResponse.nearpeerlist:type_name -> models.PeerInfo
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	3, // 1: models.FindProvidersResponse.peerlist:type_name -> models.PeerInfo
+	3, // 2: models.FindValueResponse.peerlist:type_name -> models.PeerInfo
+	3, // 3: models.FindNearUserResponse.peerlist:type_name -> models.PeerInfo
+	3, // 4: models.FindUserResponse.peerlist:type_name -> models.PeerInfo
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_peer_proto_init() }
@@ -506,7 +934,7 @@ func file_peer_proto_init() {
 			}
 		}
 		file_peer_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FindValue); i {
+			switch v := v.(*FindProviders); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -518,7 +946,79 @@ func file_peer_proto_init() {
 			}
 		}
 		file_peer_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FindProvidersResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_peer_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FindValue); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_peer_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindValueResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_peer_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FindNearUser); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_peer_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FindNearUserResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_peer_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FindUser); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_peer_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FindUserResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -536,7 +1036,7 @@ func file_peer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_peer_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
